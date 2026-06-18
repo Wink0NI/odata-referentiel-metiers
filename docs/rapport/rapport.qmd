@@ -10,6 +10,7 @@ format:
     toc: true
     toc-depth: 2
     number-sections: true
+    mermaid-format: png
     geometry:
       - top=30mm
       - left=20mm
@@ -118,6 +119,27 @@ Le projet s'appuie sur une stack technologique moderne axée sur la manipulation
 - **uv (v0.11.15+)** : Gestionnaire de paquets et d'environnements Python extrêmement rapide, assurant la reproductibilité de l'environnement de développement.
 
 # Développement
+
+## Planning du projet
+
+Le déroulement du stage a été structuré autour de plusieurs jalons techniques et de publication, s'étalant du 11 mai au 18 juin 2026.
+
+```{mermaid}
+%%| fig-width: 6.5
+gantt
+    title Chronologie du Projet (11/05 - 18/06)
+    dateFormat  YYYY-MM-DD
+    axisFormat  %d/%m
+    
+    section Jalons
+    Début du stage                 :milestone, 2026-05-11, 0d
+    Publication DuckDB (Main)      :milestone, 2026-06-05, 0d
+    Publication du site            :milestone, 2026-06-18, 0d
+    
+    section Travail Réalisé
+    Mise en place & Modélisation   :2026-05-11, 2026-06-05
+    Rédaction PDF - EPUB           :2026-06-05, 2026-06-11
+```
 
 ## Organisation et environnement de travail
 
