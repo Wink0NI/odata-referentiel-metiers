@@ -1,0 +1,32 @@
+version: '3'
+
+vars:
+  DIST_DIR: dist
+
+tasks:
+  default:
+    desc: Build the PDF report
+    cmds:
+      - task: build
+
+  build:
+    desc: Render the Quarto report to PDF using uv
+    cmds:
+      - mkdir -p {{.DIST_DIR}}
+      # uv run s'assure que l'environnement défini dans pyproject.toml est prêt
+      # et Quarto utilisera automatiquement le Python de cet environnement.
+      - uv run quarto render rapport.qmd --to pdf --output-dir {{.DIST_DIR}} --execute-daemon=0
+    sources:
+      - rapport.qmd
+      - pyproject.toml
+    generates:
+      - "{{.DIST_DIR}}/rapport.pdf"
+
+  clean:
+    desc: Clean up generated files and environments
+    cmds:
+      - rm -rf {{.DIST_DIR}}
+      - rm -rf rapport_files
+      - rm -f rapport.tex
+      - rm -rf .venv
+      - rm -f uv.lock

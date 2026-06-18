@@ -1,0 +1,169 @@
+---
+title: "Rapport de Stage - Master 1 Sciences du Logiciel"
+author: "Olivier Dinan"
+date: "2026-06-18"
+format:
+  pdf:
+    pdf-engine: xelatex
+    documentclass: report
+    papersize: a4
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    geometry:
+      - top=30mm
+      - left=20mm
+      - right=20mm
+      - bottom=30mm
+    include-in-header:
+      text: |
+        \usepackage{authblk}
+        \usepackage{graphicx}
+        \newcommand{\tuteur}{Adrien Sales (Chef de section, OPT-NC)}
+        \newcommand{\responsable}{Catherine Gayon (OPT-NC)}
+        \newcommand{\referent}{[Nom du Référent Universitaire]}
+        \newcommand{\parcours}{Master Sciences du Logiciel}
+        \makeatletter
+        \renewcommand{\maketitle}{
+          \begin{titlepage}
+            \begin{center}
+              \includegraphics[width=3.6cm]{img/logo_universite.png}
+              \hspace{2cm}
+              \includegraphics[width=3.6cm]{img/logo_opt.png}
+              
+              \vspace*{2cm}
+              {\Huge \bfseries \@title \par}
+              \vspace{1cm}
+              {\Large \@author \par}
+              \vspace{2cm}
+              
+              \begin{tabular}{ll}
+                \textbf{Structure d'accueil :} & OPT-NC \\
+                \textbf{Tuteur de stage :} & \tuteur \\
+                \textbf{Responsable structure :} & \responsable \\
+                \textbf{Référent universitaire :} & \referent \\
+                \textbf{Parcours :} & \parcours \\
+              \end{tabular}
+              
+              \vfill
+              {\Large \@date \par}
+            \end{center}
+          \end{titlepage}
+        }
+        \makeatother
+execute:
+  enabled: true
+jupyter: python3
+---
+
+# Déclaration d'utilisation d'IA {.unnumbered}
+
+Conformément aux directives, je déclare avoir utilisé le système **Gemini CLI (modèle de langage)** pour m'assister dans la rédaction de ce rapport. Cet outil a été utilisé pour :
+- Structurer le document selon les normes demandées.
+- Améliorer la formulation et la clarté de certaines sections techniques.
+- Rechercher et synthétiser les informations relatives à la stack technique du projet.
+
+# Résumé {.unnumbered}
+
+[Insérez ici votre résumé en français - 1 page maximum]
+
+# Abstract {.unnumbered}
+
+[Insert your English abstract here - 1 page maximum]
+
+# Remerciements {.unnumbered}
+
+Avant de commencer ce rapport, je tiens à remercier chaleureusement toutes les personnes qui m’ont permis de réaliser ce stage et qui m’ont accompagné tout au long de cette expérience.
+
+Tout d’abord, j’exprime ma profonde gratitude à **Vinh Sawada**. C’est grâce à lui que ma candidature a été transmise et qu’il a pu me guider efficacement pour concrétiser mon arrivée au sein de l’OPT-NC.
+
+Je remercie sincèrement mon tuteur de stage, **Adrien Sales** et les membres de la section GLIA, pour leur accueil, leur confiance et leur temps qu’ils m’ont accordé pour me faire progresser sur ce sujet technologique très moderne.
+
+Je remercie également **Loïc Salmon** pour la mise à disposition du Jetson Orin Nano, qui a permis de réaliser les expérimentations autour de l’intelligence artificielle embarquée.
+
+Enfin, je remercie **Jean-Baptiste Raclet** pour sa patience, sa réactivité et l’effort qu’il a fourni en prenant le temps de consulter et de traiter mes nombreux e-mails concernant les corrections de fautes de frappe dans ma demande de convention de stage.
+
+# Introduction
+
+## Contexte et recherches
+
+Dans le cadre de ma première année de Master "Sciences du Logiciel" à l’Université de Toulouse III - Paul Sabatier, j’ai effectué un stage au sein de la Direction des Systèmes d’Information (DSI) de l’Office des Postes et Télécommunications de Nouvelle-Calédonie (OPT-NC). Après plusieurs recherches actives et des candidatures auprès de différentes entreprises, qui n’ont pas abouti, j’ai finalement dû me tourner vers une candidature spontanée en Nouvelle-Calédonie. Cette démarche a été facilitée par **Vinh Sawada**, qui a transmis ma demande en interne, ainsi qu’**Adrien Sales**, qui m’a proposé un sujet de stage en adéquation avec ma formation et mes objectifs.
+
+Ce rapport présente les travaux réalisés lors de mon stage au sein de l'**OPT-NC**. L'OPT-NC est un établissement public à caractère industriel et commercial spécialisé dans les services postaux et de télécommunications.
+
+Au cours de cette période, j'ai eu l'opportunité de travailler sur des projets stimulants, m'immergeant dans un environnement de travail dynamique et collaboratif. Mon stage s'est concentré sur le développement d'API OData pour le référentiel métiers.
+
+L'objectif de ce document est de détailler les méthodologies employées, les outils utilisés ainsi que les résultats obtenus durant ces missions.
+
+# Stack technique
+
+Le projet s'appuie sur une stack technologique moderne axée sur la manipulation de données, l'automatisation et la génération de documentation multi-supports.
+
+## Manipulation et stockage des données
+- **DuckDB (v1.5.3+)** : Moteur de base de données analytique principal utilisé pour charger les fichiers CSV sources et structurer le référentiel.
+- **SQLite3** : Utilisé comme base de données secondaire pour assurer une compatibilité avec différents outils de consommation.
+- **Python (v3.14.5+)** : Langage de programmation utilisé pour les scripts de transformation de données et de génération de contenu (`generate-adoc.py`, `generate-md.py`).
+
+## Analyse et documentation de schéma
+- **SchemaCrawler (v17.11.1+)** : Outil permettant de générer automatiquement des schémas de base de données (PDF, PNG, HTML) et de réaliser des audits de qualité (lint).
+- **Graphviz** : Moteur de rendu utilisé par SchemaCrawler pour la visualisation des diagrammes.
+
+## Publication et rendu
+- **Asciidoctor PDF (v2.3.15+)** : Utilisé pour convertir les fichiers AsciiDoc en documentation PDF formatée.
+- **Pandoc (v3.9.0.2+)** : Utilisé pour la conversion du contenu vers le format EPUB.
+- **Hugo (v0.163.0+)** : Générateur de site statique utilisé pour produire le portail web du référentiel métiers, avec le thème **Relearn**.
+
+## Automatisation et gestion de projet
+- **Taskfile (v3.50.0+)** : Alternative aux Makefile permettant d'orchestrer l'ensemble du pipeline (nettoyage, build des bases, génération des docs et du site) via des fichiers YAML simples.
+- **uv (v0.11.15+)** : Gestionnaire de paquets et d'environnements Python extrêmement rapide, assurant la reproductibilité de l'environnement de développement.
+
+# Développement
+
+## Organisation et environnement de travail
+
+Le travail s’est organisé autour de plusieurs phases successives, allant de la mise en place de l’environnement technique jusqu’à la modélisation complète de la base de données.
+
+La première étape est de préparer l’environnement de développement. Les outils principaux installés sont **DuckDB**, le système de gestion de base de données retenu pour ce projet, ainsi que **SchemaCrawler**, un outil d’analyse et de documentation de schémas de bases de données. L’installation de **Graphviz** a également été nécessaire afin de permettre la génération des schémas visuels au format image.
+
+Le projet a été structuré pour utiliser en amont **Taskfile**, une alternative moderne aux Makefile, permettant de définir des tâches d’automatisation en YAML. Cette organisation a permis de séparer les fichiers sources CSV dans un répertoire `/input`, les scripts de chargement dans `/src`, et les fichiers de configuration dans `/etc`. Deux tâches principales ont été définies : l’une pour générer la base de données DuckDB, l’autre pour produire automatiquement les schémas de documentation via SchemaCrawler aux formats PDF et HTML.
+
+# Analyse de données avec Python
+
+Dans cette section, nous utilisons Python pour illustrer quelques analyses ou traitements effectués.
+
+```{python}
+import datetime
+
+# Affichage de la date actuelle via Python
+now = datetime.datetime.now()
+print(f"Rapport généré le : {now.strftime('%d/%m/%Y à %H:%M:%S')}")
+
+# Exemple simple de calcul
+data = [10, 20, 30, 40, 50]
+moyenne = sum(data) / len(data)
+print(f"La moyenne des données d'exemple est : {moyenne}")
+```
+
+# Résultats obtenus
+
+[Détaillez ici les résultats obtenus : livrables, bases de données fonctionnelles, outils de documentation générés, etc. - 2 pages environ]
+
+# Bilan pour l'entreprise et liens avec la formation
+
+[Expliquez l'apport de votre travail pour l'OPT-NC et comment les enseignements de votre Master Sciences du Logiciel ont été mobilisés - 1 page]
+
+# Bilan des connaissances et des compétences
+
+[Présentez ici les compétences acquises ou renforcées (savoir-faire et savoir-être) sous forme de verbes d'action - 3 pages]
+
+# Objectifs pour la suite en M2
+
+[Précisez ici vos objectifs pour l'année de Master 2 : poursuite à l'OPT-NC ou autre type de structure/mission visée - 1 page]
+
+# Conclusion
+
+Mon stage au sein de l'OPT-NC a été une expérience enrichissante qui m'a permis de renforcer mes compétences techniques en Python et en ingénierie logicielle, tout en découvrant les enjeux d'un secteur à la pointe de l'innovation.
+
+# Annexes {.unnumbered}
+
+[Glossaire, Bibliographie, Captures d'écran supplémentaires, etc.]
