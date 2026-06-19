@@ -1,2 +1,3 @@
 /.quarto/
+.task
 **/*.quarto_ipynb
