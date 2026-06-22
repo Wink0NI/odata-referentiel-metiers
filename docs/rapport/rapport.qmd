@@ -61,10 +61,13 @@ jupyter: python3
 
 # Déclaration d'utilisation d'IA {.unnumbered}
 
-Conformément aux directives, je déclare avoir utilisé le système **Gemini CLI (modèle de langage)** pour m'assister dans la rédaction de ce rapport. Cet outil a été utilisé pour :
+Conformément aux directives, je déclare avoir utilisé le système **Gemini CLI
+(modèle de langage)** pour m'assister dans la rédaction de ce rapport. Cet outil
+a été utilisé pour :
 - Structurer le document selon les normes demandées.
 - Améliorer la formulation et la clarté de certaines sections techniques.
-- Rechercher et synthétiser les informations relatives à la stack technique du projet.
+- Rechercher et synthétiser les informations relatives à la stack technique du
+  projet.
 
 # Résumé {.unnumbered}
 
@@ -76,110 +79,119 @@ Conformément aux directives, je déclare avoir utilisé le système **Gemini CL
 
 # Remerciements {.unnumbered}
 
-Avant de commencer ce rapport, je tiens à remercier chaleureusement toutes les personnes qui
-m’ont permis de réaliser ce stage et qui m’ont accompagné tout au long de cette expérience.
+Avant de commencer ce rapport, je tiens à remercier chaleureusement toutes les
+personnes qui
+m’ont permis de réaliser ce stage et qui m’ont accompagné tout au long de cette
+expérience.
 
-Tout d’abord, j’exprime ma profonde gratitude à **Vinh Faucher**. C’est grâce à lui que ma
-candidature a été transmise et qu’il a pu me guider efficacement pour concrétiser son arrivée
+Tout d’abord, j’exprime ma profonde gratitude à **Vinh Faucher**. C’est grâce à
+lui que ma
+candidature a été transmise et qu’il a pu me guider efficacement pour
+concrétiser son arrivée
 au sein de l’OPT-NC.
 
-Je remercie sincèrement mon tuteur de stage, **Adrien Sales** et les membres de la section
-GLIA, pour leur accueil, leur confiance et leur temps qu’ils m’ont accordé pour me faire
+Je remercie sincèrement mon tuteur de stage, **Adrien Sales** et les membres de
+la section
+GLIA, pour leur accueil, leur confiance et leur temps qu’ils m’ont accordé pour
+me faire
 progresser sur ce sujet technologique très moderne.
 
-Je remercie également **Loïc Salmon** pour la mise à disposition du Jetson Orin Nano, qui a
-permis de réaliser les expérimentations autour de l’intelligence artificielle embarquée.
+Je remercie également **Loïc Salmon** pour la mise à disposition du Jetson Orin
+Nano, qui a
+permis de réaliser les expérimentations autour de l’intelligence artificielle
+embarquée.
 
-Enfin, je remercie **Jean-Baptiste Raclet** pour sa patience, sa réactivité et l’effort qu’il a
-fourni en prenant le temps de consulter et de traiter mes nombreux e-mails concernant les
+Enfin, je remercie **Jean-Baptiste Raclet** pour sa patience, sa réactivité et
+l’effort qu’il a
+fourni en prenant le temps de consulter et de traiter mes nombreux e-mails
+concernant les
 corrections de fautes de frappe dans ma demande de convention de stage.
 
 # Introduction
 
-Ce rapport présente les travaux réalisés lors de mon stage à l'**OPT-NC**, détaillant la
+Ce rapport présente les travaux réalisés lors de mon stage à l'**OPT-NC**,
+détaillant la
 démarche d'ingénierie, les outils utilisés et les résultats obtenus.
 
 # Contexte, Sujet et Objectifs du Stage
 
 ## Contexte et recherches
 
-Dans le cadre de ma première année de Master "Sciences du Logiciel" à l’Université de Toulouse,
-la recherche d'un stage s'est avérée être une étape déterminante et parfois complexe. Après
-plusieurs démarches infructueuses auprès de diverses entreprises, j'ai dû envisager une
-approche plus proactive, menant à une candidature spontanée en Nouvelle-Calédonie. Cette
-initiative, bien que non conventionnelle, a été grandement facilitée par **Vinh Faucher**, dont
-le soutien a été précieux pour transmettre ma candidature en interne au sein de l'Office des
-Postes et Télécommunications de Nouvelle-Calédonie (OPT-NC).
+Dans le cadre de ma première année de Master "Sciences du Logiciel" à
+l’Université de Toulouse, la recherche d'un stage a été une étape importante
+mais parfois difficile. Après plusieurs candidatures restées sans réponse de la
+part d'entreprises locales, j’ai décidé d’élargir mes recherches en envoyant une
+candidature spontanée en Nouvelle-Calédonie. Cette démarche un peu originale a
+fonctionné grâce à **Vinh Faucher**, qui a fait passer mon CV en interne à
+l'Office des Postes et Télécommunications de Nouvelle-Calédonie (OPT-NC).
 
-C'est ainsi que j’ai eu l’opportunité d’intégrer la **section GLIA** de l'OPT-NC. Le Génie
-Logiciel Inter Applicatif se distingue par son rôle de pôle d'innovation, spécialisé dans le
-développement de solutions technologiques avancées, notamment dans les domaines de
-l'intelligence artificielle et des services connectés. Mon parcours en Master Sciences du
-Logiciel à l'Université de Toulouse, avec ses enseignements solides en ingénierie logicielle,
-s'est avéré en parfaite adéquation avec ces orientations technologiques. Cette convergence m'a
-permis d'aborder concrètement les défis liés à la structuration des données, au développement
-d'APIs performantes et à l'exploitation de l'IA générative, des axes fondamentaux du travail
-mené au sein de GLIA. **Adrien Sales**, en tant que mon tuteur, m'a proposé un sujet de stage
-qui correspondait parfaitement à mes objectifs académiques et professionnels, marquant le début
-d'une expérience enrichissante au sein d'une structure publique résolument tournée vers
-l'avenir.
+C'est ainsi que j'ai intégré la **section GLIA** (Génie Logiciel Inter
+Applicatif) de l'OPT-NC. C'est une équipe très axée sur l'innovation, surtout
+sur l'intelligence artificielle et les services connectés. Comme les cours de
+mon Master collaient bien aux projets du service, j'ai pu me plonger rapidement
+dans le concret avec la structuration de données, le développement d'API et
+l'usage de l'IA générative. Mon tuteur, **Adrien Sales**, m'a proposé un sujet
+idéal pour mon profil, de quoi bien lancer cette expérience.
 
 ## Sujet du stage
 
-Le sujet qui m’a été confié porte sur l’ingénierie des données et le développement d’une
-architecture Cloud Native, des domaines cruciaux pour la modernisation des systèmes
-d'information. Au cœur de cette mission se trouve le référentiel métiers de l’OPT-NC, un
-annuaire exhaustif des métiers et compétences de l'entreprise. Traditionnellement, ces
-informations vitales étaient conservées dans des fichiers tableurs (CSV). Bien que simples
-d'utilisation pour des volumes réduits, ces fichiers présentent des limitations significatives
-: ils sont intrinsèquement sujets aux erreurs de saisie, rendent l'application de contraintes
-d'intégrité complexe, et leur exploitation manuelle devient rapidement laborieuse et source
-d'incohérences à mesure que le volume et la complexité des données augmentent. Surtout, leur
-nature statique limite fortement leur réutilisation dynamique par d'autres applications, créant
-des silos d'information.
+Le but du stage est de moderniser le référentiel métiers de l'OPT-NC. Cet
+annuaire centralise tous les métiers et les compétences de l'entreprise. Pour
+cela, nous faisons évoluer le système vers une architecture moderne (« Cloud
+Native ») en retravaillant la gestion et l'ingénierie des données.
 
-Face à ces enjeux, mon travail s'est articulé autour de deux axes majeurs : d'abord,
-transformer ce référentiel fragmenté en une base de données relationnelle robuste, structurée
-et fiable. Cette transition garantit non seulement l'intégrité et la cohérence des données
-grâce à la définition de schémas stricts et de relations claires, mais offre également une
-capacité d'interrogation et de gestion beaucoup plus avancée. Ensuite, il était essentiel de
-développer un service standardisé (API) permettant à d'autres applications et systèmes
-d'accéder à ces données de manière programmatique et automatique. L'adoption d'un protocole
-comme **OData** est envisagée pour cette API, apportant des capacités d'interrogation riches et
-standardisées, ainsi qu'une description automatique des métadonnées.
+Auparavant, ces informations étaient stockées dans de simples fichiers CSV. Si
+ce format est pratique au début, il montre vite ses limites. Les erreurs de
+saisie y sont fréquentes, il est difficile d'y appliquer des contrôles
+automatiques et les données restent bloquées dans des fichiers isolés au lieu
+d'être accessibles en temps réel par d'autres outils.
 
-Un volet exploratoire ambitieux du projet inclut également l’intégration de l'intelligence
-artificielle générative. L'objectif est d'exploiter le protocole MCP (Model Context Protocol)
-pour permettre à des agents conversationnels avancés, tels que Gemini ou Claude, d'interagir
-directement avec la base de données métiers. Cela ouvre des perspectives inédites pour l'accès
-aux informations du référentiel par le langage naturel, démocratisant ainsi l'accès à
-l'information pour les utilisateurs non techniques et permettant des analyses plus intuitives
-et complexes. Cette approche vise à transformer la manière dont les connaissances sur les
-métiers et les compétences sont consultées et valorisées au sein de l'OPT-NC.
+Mon projet s'est déroulé en deux temps. J'ai commencé par nettoyer et structurer
+ces fichiers pour regrouper les données dans une base relationnelle fiable.
+Cette transition garantit la qualité des informations en évitant les doublons et
+facilite grandement leur exploitation. J'ai ensuite développé une API en Java
+avec le framework **Quarkus** pour que les autres applications de l'entreprise
+puissent interroger et récupérer ces données de manière automatique.
+
+En plus de cette base, le stage comprend une partie exploratoire autour de
+l'intelligence artificielle générative. L'idée est d'utiliser le protocole MCP
+(Model Context Protocol) pour connecter des assistants comme Gemini ou Claude
+directement à notre base de données. Cela permet de poser des questions en
+langage naturel, offrant ainsi aux personnes non techniques un accès simple et
+intuitif aux données métiers.
 
 ## Objectifs
 
-Dans une démarche d’Open Data et d’Open Source, ce projet vise à moderniser les outils de
-l’OPT-NC afin de les rendre plus fiables et conformes aux standards actuels de l’industrie.
-Pour y parvenir, le travail a été organisé en suivant quatre objectifs principaux :
+Dans une démarche d’Open Data et d’Open Source, ce projet vise à moderniser les
+outils de
+l’OPT-NC afin de les rendre plus fiables et conformes aux standards actuels de
+l’industrie.
+Pour y parvenir, le travail a été organisé en suivant quatre objectifs
+principaux :
 
-- Analyser, nettoyer et migrer les fichiers CSV vers une base de données relationnelle (DuckDB)
+- Analyser, nettoyer et migrer les fichiers CSV vers une base de données
+  relationnelle (DuckDB)
 en appliquant des contraintes d’intégrité fortes.
 
-- Développer une API Java avec le framework **Quarkus**, accompagnée d’une documentation
+- Développer une API Java avec le framework **Quarkus**, accompagnée d’une
+  documentation
 générée automatiquement via **Redocly**.
 
-- Conteneuriser l’application avec **Podman** et la déployer sur un cluster local **Minikube**
+- Conteneuriser l’application avec **Podman** et la déployer sur un cluster
+  local **Minikube**
 utilisant **Kubernetes**.
 
-- Mettre en place le protocole MCP (Model Context Protocol) afin de permettre à des agents
-d’intelligence artificielle comme Gemini ou Claude d’interagir avec le référentiel de données.
+- Mettre en place le protocole MCP (Model Context Protocol) afin de permettre à
+  des agents
+d’intelligence artificielle comme Gemini ou Claude d’interagir avec le
+référentiel de données.
 
 # Développement
 
 ## Planning du projet
 
-Le déroulement du stage a été structuré autour de plusieurs jalons techniques et de
+Le déroulement du stage a été structuré autour de plusieurs jalons techniques et
+de
 publication, s'étalant du 11 mai au 18 juin 2026.
 
 \begin{center}
@@ -220,189 +232,257 @@ publication, s'étalant du 11 mai au 18 juin 2026.
 
 ## Organisation et environnement de travail
 
-Le travail s’est organisé autour de plusieurs phases successives, allant de la mise en place de l’environnement technique jusqu’à la modélisation complète de la base de données. L'objectif principal était de concevoir un pipeline reproductible et automatisé ("Infrastructure as Code" appliqué à la documentation), éliminant les tâches manuelles et garantissant la cohérence des publications multi-supports (PDF, EPUB, Web).
+Pour mener à bien ce projet, j'ai découpé le travail en plusieurs étapes, de la
+configuration de l'ordinateur jusqu'à la structure finale de la base de données.
+L'idée forte était de créer un pipeline automatisé et reproductible (sur le
+modèle de l'« Infrastructure as Code », mais appliqué à la documentation). De
+cette façon, on évite les actions manuelles répétitives et on s'assure que les
+différents formats générés (PDF, EPUB et Web) restent toujours identiques.
 
-L’installation de **DuckDB**, le système de gestion de base de données analytique retenu pour ce projet, ainsi que **SchemaCrawler** et **Graphviz**, a permis de poser les bases de la modélisation et de la documentation automatique du schéma physique.
+
+
+
 
 ## Ingénierie des données et Modélisation (DuckDB & SQLite)
 
-La première étape de la démarche d’ingénierie a consisté à concevoir une base de données relationnelle robuste à partir des fichiers plats CSV issus de la plateforme RH Neobrain. Pour ce faire, **DuckDB** a été choisi comme moteur principal en raison de sa rapidité, de sa syntaxe SQL moderne et de sa capacité à ingérer directement des fichiers CSV via la fonction `read_csv_auto`.
+Le script
+[duck.sql](file:///home/onite/IdeaProjects/odata-referentiel-metiers/src/duck.sql)
+se charge d'importer les fichiers CSV bruts, de nettoyer les données et de les
+organiser proprement dans la base. J'ai également écrit une macro SQL permettant
+d'uniformiser le format des identifiants (les clés de nos tables). Lors de
+l'exportation, DuckDB génère le schéma SQL et extrait les tables en triant les
+lignes selon leur clé primaire. De cette façon, le contenu reste toujours dans
+le même ordre, ce qui évite d'encombrer l'historique Git avec des modifications
+de lignes inutiles.
 
-Le chargement s'effectue via le script [duck.sql](file:///home/onite/IdeaProjects/odata-referentiel-metiers/src/duck.sql) qui réalise les opérations suivantes :
-1. **Nettoyage et Normalisation** : Création d'une macro SQL `formatter(str)` permettant de normaliser les identifiants textuels en clés primaires/étrangères propres (passage en minuscules, suppression des accents via `TRANSLATE`, remplacement des caractères spéciaux par des underscores).
-2. **Modélisation Relationnelle** : Les tables brutes sont découpées et structurées en un schéma normalisé comprenant les tables `famille_metier`, `metier`, `competence`, `groupe_competence`, `referentiel_competence`, et la table d'association `metier_competence` (qui porte la relation avec le poids et le niveau requis).
-3. **Intégration de Verbatims** : Chargement automatique de verbatims métiers réels issus de fichiers CSV stockés dans `data/static/verbatims/`.
-4. **Contrôle Qualité de la Donnée** : Conception de plusieurs vues de contrôle et d'audit pour détecter automatiquement les anomalies de saisie avant la génération documentaire :
-   * `vw_metiers_orphelins` : Métiers n'ayant aucune compétence associée.
-   * `vw_competences_orphelines` : Compétences non requises par les métiers actifs.
-   * `vw_groupes_manquants_par_metier` : Identification des métiers manquant d'une catégorie (ex: absence de compétences en Savoir-être).
-   * `vw_metiers_qui_possede_niveau_competence_0` : Contrôle des associations dont le niveau requis est anormalement à 0.
-   * `vw_competences_dupliquees` : Détection des doublons de compétences.
+Afin de rendre ces données accessibles à d'autres outils de l'entreprise, j'ai
+créé une base **SQLite3** en utilisant le script
+[sqlite.sql](file:///home/onite/IdeaProjects/odata-referentiel-metiers/src/sqlite.sql)
+. Ce script importe les fichiers CSV exportés de DuckDB puis recrée les mêmes
+vues de vérification que sur DuckDB.
 
-En parallèle, une base **SQLite3** secondaire ([sqlite.sql](file:///home/onite/IdeaProjects/odata-referentiel-metiers/src/sqlite.sql)) est générée à partir des tables exportées pour assurer une compatibilité maximale avec les clients externes ou des cas d'usage légers.
+De plus, j'utilise **SchemaCrawler** pour documenter visuellement la base en
+générant automatiquement des diagrammes relationnels (en PNG, PDF et HTML).
+L'outil sert également à effectuer un audit de qualité (linting) pour valider la
+structure en détectant des anomalies comme des clés manquantes ou des types de
+données incohérents, ce qui garantit une base saine et une documentation
+toujours à jour.
 
 ## Automatisation et Orchestration (Taskfile & uv)
 
-Pour orchestrer ce pipeline complexe de manière déterministe, le projet s’appuie sur **Taskfile** (alternative moderne à Make en YAML). Le fichier [Taskfile.yml](file:///home/onite/IdeaProjects/odata-referentiel-metiers/Taskfile.yml) définit des tâches unitaires chaînées :
-* `clean` : Nettoie l'environnement et les dossiers de sortie.
-* `duckdb` & `sqlite` : Initialisent et remplissent les bases de données.
-* `schema` : Exécute **SchemaCrawler** pour générer les schémas de base de données (PNG, PDF, HTML) et réaliser des audits de qualité (linting).
-* `docs` : Lance les scripts de génération et compile les fichiers PDF et EPUB.
-* `site` : Construit le portail Hugo.
+Le fichier
+[Taskfile.yml](file:///home/onite/IdeaProjects/odata-referentiel-metiers/Taskfile.yml)
+configure et enchaîne toutes les étapes du projet. Par défaut, lancer la
+commande `task` exécute l'intégralité du pipeline dans l'ordre suivant :
 
-La reproductibilité logicielle et la vitesse d'exécution sont garanties par **uv**, le gestionnaire d'environnements et de paquets Python. `uv` s'assure que toutes les dépendances définies dans le projet sont installées instantanément dans un environnement virtuel isolé (`.venv`), évitant les conflits de version.
+- `clean` : supprime le dossier virtuel `.venv` et les anciennes sorties de
+  compilation.
+
+- `duckdb` : initialise la base de données principale et exporte les données
+  propres.
+
+- `sqlite` : convertit les données CSV exportées de DuckDB dans le format SQLite
+  pour assurer une compatibilité maximale avec d'autres clients.
+
+- `schema` : fait appel à **SchemaCrawler** pour auditer la structure des tables
+  et dessiner l'architecture sous forme de diagrammes.
+
+- `docs` : convertit les données en pages AsciiDoc, puis compile le rapport
+  final aux formats PDF et EPUB.
+
+- `site` : assemble le portail web en configurant un espace **Hugo** propre doté
+  du thème **Relearn**, en copiant les fichiers de configuration et les styles,
+  et en générant les fiches Markdown à partir de la base.
+
+
 
 ## Pipeline de Génération Documentaire (AsciiDoc & Asciidoctor)
 
-La documentation officielle du référentiel métiers est générée dynamiquement à partir des données nettoyées dans DuckDB. Le script Python [generate-adoc.py](file:///home/onite/IdeaProjects/odata-referentiel-metiers/src/generate-adoc.py) extrait les données relationnelles et rédige le fichier source au format **AsciiDoc** (`referentiel_metiers.adoc`). Ce script implémente des éléments visuels riches :
-* Une mise en page de garde dynamique et des métadonnées strictes.
-* La traduction des niveaux de compétences (1 à 4) en représentations visuelles (cercles pleins/vides générés par FontAwesome).
-* Le regroupement structuré des compétences par catégories (Savoir, Savoir-faire, Savoir-être, Manager).
+Pour concevoir le rapport final, le script
+[generate-adoc.py](file:///home/onite/IdeaProjects/odata-referentiel-metiers/src/generate-adoc.py)
+extrait d'abord les informations de la base pour construire un fichier source
+intermédiaire au format **AsciiDoc** (`referentiel_metiers.adoc`). Durant cette
+étape, le script se charge de :
 
-Une fois le fichier `.adoc` généré, **Asciidoctor PDF** prend le relais pour compiler le document en un rapport PDF de haute qualité, utilisant un thème de mise en page personnalisé (`pdf-theme.yml`). De même, **Pandoc** convertit ce contenu en format **EPUB 3** en y intégrant le style CSS et les polices embarquées.
+- Structurer le document avec une page de garde et des métadonnées de
+  publication.
+
+- Traduire les niveaux de compétences (de 1 à 4) sous forme de cercles pleins ou
+  vides via Font Awesome.
+
+- Organiser et regrouper les compétences de chaque fiche métier par catégories
+  (Savoir, Savoir-faire, Savoir-être et Manager).
+
+Une fois ce fichier intermédiaire créé, **Asciidoctor PDF** compile le document
+au format PDF en lui appliquant la feuille de style du thème (`pdf-theme.yml`).
+En parallèle, **Pandoc** convertit ce même contenu au format **EPUB 3** en y
+intégrant les règles CSS et les polices typographiques embarquées.
 
 ## Portail Web Interactif (Hugo & Thème Relearn)
 
-Pour rendre le référentiel accessible en ligne de manière interactive, le pipeline génère un portail web statique avec **Hugo**. Le script [generate-md.py](file:///home/onite/IdeaProjects/odata-referentiel-metiers/src/generate-md.py) génère l'arborescence des fichiers Markdown structurés (fiches métiers, familles, compétences) à partir de la base de données.
+Afin de rendre le référentiel facilement consultable, j'ai mis en place un site
+statique avec **Hugo**. Le script
+[generate-md.py](file:///home/onite/IdeaProjects/odata-referentiel-metiers/src/generate-md.py)
+extrait les données de la base DuckDB et génère automatiquement l'arborescence
+des fiches métiers, des familles et des compétences sous forme de fichiers
+Markdown.
 
-Le site utilise le thème moderne **Relearn** et intègre :
-* Une configuration dynamique (`hugo.dynamic.toml`) pour la gestion des logos et de l'URL de base.
-* Deux thèmes de couleurs personnalisés aux couleurs de l'OPT-NC (`theme-opt-light-theme.css` et `theme-opt-dark-theme.css`).
-* Des icônes Font Awesome pour le menu de navigation.
-* Un pied de page dynamique intégrant le tag de versioning Git récupéré automatiquement lors du build de production (`release_version.json`).
+Pour l'interface, j'ai choisi le thème **Relearn**, conçu pour la documentation,
+et j'y ai apporté quelques ajustements spécifiques.
+
+D'abord, le script de génération crée un fichier de style (`family-colors.css`)
+qui associe une couleur spécifique à chaque famille de métiers, déclinée pour le
+mode clair et le mode sombre. Ces couleurs s'appliquent sur des cartes
+interactives en page d'accueil, affichant le nombre de métiers actifs de chaque
+secteur.
+
+De plus, j'ai modifié la recherche globale du site grâce à un script d'en-tête
+(`custom-header.html`). Désormais, chaque résultat s'affiche avec une bordure
+colorée correspondant à sa famille d'origine.
+
+Enfin, le fichier dynamique `hugo.dynamic.toml` ajuste automatiquement les
+chemins des logos et l'adresse du site selon l'environnement. Le pied de page
+récupère quant à lui la version exacte du projet (`release_version.json`) à
+partir du tag de version Git, ce qui permet de savoir précisément de quand date
+la publication.
 
 
 
 # Résultats obtenus
 
-Le processus d'ingénierie des données et de développement a abouti à plusieurs résultats
-tangibles, notamment la transformation du référentiel métiers et la génération automatique de
+Le processus d'ingénierie des données et de développement a abouti à plusieurs
+résultats
+tangibles, notamment la transformation du référentiel métiers et la génération
+automatique de
 sa documentation.
 
-Le schéma conceptuel et physique de la base de données DuckDB, généré à partir de l'analyse du
-référentiel, est présenté ci-dessous. Il illustre la structure des données et les relations
+Le schéma conceptuel et physique de la base de données DuckDB, généré à partir
+de l'analyse du
+référentiel, est présenté ci-dessous. Il illustre la structure des données et
+les relations
 entre les différentes entités métiers et compétences.
 
-![Schéma de la base de données du référentiel métiers](img/ref-metiers-opt-nc-schema.png)
+![Schéma de la base de données du référentiel
+métiers](img/ref-metiers-opt-nc-schema.png)
 
-[Continuer à détailler ici les résultats obtenus : livrables, bases de données fonctionnelles,
+[Continuer à détailler ici les résultats obtenus : livrables, bases de données
+fonctionnelles,
 outils de documentation générés, etc. - pour atteindre les 2 pages environ]
 
 # Bilan pour l'entreprise et liens avec la formation
 
-[Expliquez l'apport de votre travail pour l'OPT-NC et comment les enseignements de votre Master
+[Expliquez l'apport de votre travail pour l'OPT-NC et comment les enseignements
+de votre Master
 Sciences du Logiciel ont été mobilisés - 1 page]
 
 # Bilan des connaissances et des compétences
 
-[Présentez ici les compétences acquises ou renforcées (savoir-faire et savoir-être) sous forme
+[Présentez ici les compétences acquises ou renforcées (savoir-faire et
+savoir-être) sous forme
 de verbes d'action - 3 pages]
 
 # Objectifs pour la suite en M2
 
-[Précisez ici vos objectifs pour l'année de Master 2 : poursuite à l'OPT-NC ou autre type de
+[Précisez ici vos objectifs pour l'année de Master 2 : poursuite à l'OPT-NC ou
+autre type de
 structure/mission visée - 1 page]
 
 # Conclusion
 
-Mon stage au sein de l'OPT-NC a été une expérience enrichissante qui m'a permis de renforcer
+Mon stage au sein de l'OPT-NC a été une expérience enrichissante qui m'a permis
+de renforcer
 mes compétences
-techniques en Python et en ingénierie logicielle, tout en découvrant les enjeux d'un secteur à
+techniques en Python et en ingénierie logicielle, tout en découvrant les enjeux
+d'un secteur à
 la pointe de l'innovation.
 
 # Annexes {.unnumbered}
 
 ## Stack technique
 
-Le projet s’appuie sur une stack technologique moderne axée sur la manipulation de données,
-l’automatisation et la génération de documentation multi-supports. Les outils principaux
-utilisés sont :
+La réalisation de ce projet s'appuie sur un ensemble d'outils modernes choisis
+pour répondre à des besoins précis : le nettoyage des données, l'automatisation
+des tâches répétitives et la publication de la documentation sous plusieurs
+formats. Cette architecture logicielle permet de maintenir une chaîne de
+traitement propre et reproductible d'un bout à l'autre. Voici la liste des
+principaux logiciels et bibliothèques utilisés :
 
-*   **DuckDB (v1.5.3+)** : Moteur de base de données analytique principal pour charger les
-    fichiers CSV sources et structurer le référentiel.
-*   **SQLite3** : Base de données secondaire pour assurer la compatibilité.
-*   **Python (v3.14.5+)** : Langage de programmation pour les scripts de transformation de
-    données et de génération de contenu (`generate-adoc.py`, `generate-md.py`).
-*   **SchemaCrawler (v17.11.1+)** : Outil pour générer automatiquement des schémas de base de
-    données (PDF, PNG, HTML) et réaliser des audits de qualité.
-*   **Graphviz** : Moteur de rendu utilisé par SchemaCrawler pour la visualisation des diagrammes.
-*   **Asciidoctor PDF (v2.3.15+)** : Pour convertir les fichiers AsciiDoc en documentation PDF
-    formatée.
-*   **Pandoc (v3.9.0.2+)** : Pour la conversion du contenu vers le format EPUB.
-*   **Hugo (v0.163.0+)** : Générateur de site statique pour le portail web du référentiel métiers, avec le thème **Relearn**.
-*   **Taskfile (v3.50.0+)** : Alternative aux Makefile pour orchestrer le pipeline (nettoyage,
-    build des bases, génération des docs et du site).
-*   **uv (v0.11.15+)** : Gestionnaire de paquets et d’environnements Python rapide, assurant la reproductibilité.
+- **DuckDB (v1.5.3+)** : C'est le moteur SQL principal du projet. Je l'utilise
+  pour importer les fichiers CSV bruts, puis nettoyer et structurer le
+  référentiel directement en mémoire.
+
+- **SQLite3** : Je m'en sers comme format de base de données secondaire. Il
+  assure une compatibilité maximale avec d'autres outils et facilite le partage
+  des données nettoyées.
+
+- **Python (v3.14.5+)** : C'est le langage avec lequel j'ai développé tous les
+  scripts de transformation de données et de génération automatique des fichiers
+  Markdown et AsciiDoc.
+
+- **SchemaCrawler (v17.11.1+)** : Cet outil me permet d'auditer la structure des
+  bases DuckDB et SQLite, puis d'en extraire automatiquement le schéma
+  relationnel.
+
+- **Graphviz** : C'est le moteur de rendu associé à SchemaCrawler pour générer
+  le diagramme relationnel des tables sous forme d'image.
+
+- **Asciidoctor PDF (v2.3.15+)** : Je l'utilise pour compiler le document
+  AsciiDoc et générer le rapport final au format PDF avec un thème de mise en
+  page personnalisé.
+
+- **Pandoc (v3.9.0.2+)** : Il me sert à convertir le fichier AsciiDoc au format
+  EPUB 3 pour proposer une version livre numérique lisible sur tablette ou
+  liseuse.
+
+- **Hugo (v0.163.0+)** et son thème **Relearn** : C'est le générateur de site
+  statique choisi pour créer le portail web interactif et publier facilement les
+  fiches métiers en ligne.
+
+- **Taskfile (v3.50.0+)** : Cet outil d'orchestration me permet d'automatiser et
+  de lancer toutes les étapes du projet (import, génération, compilation) avec
+  des commandes simples.
+
+- **uv (v0.11.15+)** : C'est le gestionnaire avec lequel je gère l'environnement
+  virtuel Python et fige les dépendances du projet pour qu'il reste
+  reproductible.
 
 ## Glossaire
 
 **OPT-NC (Office des Postes et Télécommunications de Nouvelle-Calédonie)**
-: Établissement public à caractère industriel et commercial fournissant des services postaux et
-de télécommunications en Nouvelle-Calédonie.
+: Établissement public à caractère industriel et commercial fournissant des
+  services postaux et de télécommunications en Nouvelle-Calédonie.
 
 **GLIA**
-: Section au sein de l'OPT-NC spécialisée dans le développement de solutions technologiques
-avancées, notamment en intelligence artificielle.
+: Section au sein de l'OPT-NC spécialisée dans le développement de solutions
+  technologiques avancées, notamment en intelligence artificielle.
 
 **CSV (Comma Separated Values)**
-: Format de fichier texte simple pour stocker des données tabulaires, où les valeurs sont
-séparées par des virgules.
-
-**DuckDB**
-: Système de gestion de base de données analytique embarqué, optimisé pour les requêtes OLAP
-directement sur des fichiers de données.
+: Format de fichier texte simple pour stocker des données tabulaires, où les
+  valeurs sont séparées par des virgules.
 
 **API (Application Programming Interface)**
-: Ensemble de définitions et de protocoles utilisés pour créer et intégrer des logiciels
-d'application. Elle permet à différents systèmes de communiquer entre eux.
-
-**Asciidoctor PDF**
-: Outil permettant de convertir des documents AsciiDoc en fichiers PDF formatés, souvent
-utilisé pour la documentation technique.
+: Ensemble de définitions et de protocoles utilisés pour créer et intégrer des
+  logiciels d'application. Elle permet à différents systèmes de communiquer
+  entre eux.
 
 **Cloud Native**
-: Approche de construction et d'exécution d'applications qui tire parti des avantages du cloud
-computing, notamment l'élasticité, la résilience et la scalabilité.
-
-**Graphviz**
-: Logiciel de visualisation de graphes utilisé pour représenter des structures et des relations
-sous forme graphique.
-
-**Hugo**
-: Générateur de sites statiques rapide, utilisé pour créer des sites web performants à partir
-de fichiers Markdown.
+: Approche de construction et d'exécution d'applications qui tire parti des
+  avantages du cloud computing, notamment l'élasticité, la résilience et la
+  scalabilité.
 
 **MCP (Model Context Protocol)**
-: Protocole permettant à des modèles d'IA générative d'interagir et d'interroger des bases de
-données structurées.
+: Protocole permettant à des modèles d'IA générative d'interagir et d'interroger
+  des bases de données structurées.
 
 **OData (Open Data Protocol)**
-: Protocole basé sur HTTP, Atom et JSON, pour construire et consommer des API RESTful
-permettant d'interroger et de manipuler des données.
-
-**Pandoc**
-: Convertisseur universel de documents, capable de transformer des fichiers d'un format de
-balisage à un autre (par exemple, Markdown vers EPUB).
-
-**Python**
-: Langage de programmation interprété, de haut niveau, souvent utilisé pour l'analyse de
-données, le scripting et le développement web.
+: Protocole basé sur HTTP, Atom et JSON, pour construire et consommer des API
+  RESTful permettant d'interroger et de manipuler des données.
 
 **Référentiel métiers**
-: Annuaire ou base de données structurée détaillant les métiers, rôles, compétences et autres
-informations liées aux ressources humaines d'une organisation.
-
-**SchemaCrawler**
-: Outil d'analyse et de documentation de schémas de bases de données, capable de générer des
-rapports et des visualisations.
+: Annuaire ou base de données structurée détaillant les métiers, rôles,
+  compétences et autres informations liées aux ressources humaines d'une
+  organisation.
 
 **Stack technique**
-: Ensemble des technologies et outils logiciels utilisés pour développer et déployer une
-application ou un système.
-
-**Taskfile**
-: Outil d'automatisation de tâches basé sur YAML, servant d'alternative moderne aux Makefiles.
-
-**uv**
-: Outil rapide de gestion de paquets et d'environnements pour Python, optimisé pour
-l'installation rapide de dépendances.
+: Ensemble des technologies et outils logiciels utilisés pour développer et
+  déployer une application ou un système.
