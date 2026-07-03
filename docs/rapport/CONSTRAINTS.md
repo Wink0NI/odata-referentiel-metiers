@@ -33,6 +33,20 @@ Ce document récapitule les contraintes extraites du fichier `Cadrage du rapport
 - **Déclaration obligatoire** en préambule du document.
 - Préciser l'outil utilisé et son mode d'exploitation (fond, forme, etc.).
 
+## ✍️ Autres contraintes de rédaction
+- Chaque partie doit expliquer clairement le **quoi**, le **comment**
+  et le **pourquoi**.
+- Utiliser les deux-points uniquement lorsqu'ils introduisent une vraie liste.
+- Pour préciser une idée dans une phrase, préférer les parenthèses plutôt que les
+  deux-points.
+- Éviter les formulations du type "ce n'est pas seulement ceci, c'est aussi
+  cela" lorsqu'elles n'apportent rien.
+- Utiliser ce type d'opposition seulement lorsqu'elle aide réellement à
+  comprendre le propos.
+- Le rapport doit rester compréhensible pour une personne de niveau Master.
+- Éviter les formulations trop abstraites, trop générées par IA ou susceptibles
+  de créer de la confusion.
+
 ## ⚖️ Critères d'évaluation
 - Qualité de la présentation.
 - Clarté et précision.

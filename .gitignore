@@ -4,5 +4,9 @@ data/output/docs
 .idea/
 __pycache__/
 .venv/
+.env
+.cache
 
 site
+
+uv.lock

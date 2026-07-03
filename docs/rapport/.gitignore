@@ -1,3 +1,9 @@
 /.quarto/
 .task
+.cache
 **/*.quarto_ipynb
+
+rapport-competences_files/
+rapport_files/
+
+img/generated/

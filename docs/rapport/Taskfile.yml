@@ -1,7 +1,18 @@
 version: '3'
 
 vars:
-  DIST_DIR: dist
+  # Modèle utilisé par le rapport de clustering des compétences.
+  # Pour tester un autre modèle, remplacez la valeur active ci-dessous.
+  EMBEDDING_MODEL_NAME: BAAI/bge-m3
+  # EMBEDDING_MODEL_NAME: nvidia/omni-embed-nemotron-3b
+  # EMBEDDING_MODEL_NAME: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+  # EMBEDDING_MODEL_NAME: Qwen/Qwen3-Embedding-4B
+  # EMBEDDING_MODEL_NAME: perplexity-ai/pplx-embed-context-v1-4b
+  # EMBEDDING_MODEL_NAME: ibm-granite/granite-embedding-311m-multilingual-r2
+  # EMBEDDING_MODEL_NAME: nomic-ai/nomic-embed-text-v1.5
+  # EMBEDDING_MODEL_NAME: nomic-ai/colnomic-embed-multimodal-3b
+  # EMBEDDING_MODEL_NAME: sentence-transformers/all-MiniLM-L6-v2
+  COMPETENCES_PDF_FILE: 'rapport-competences-model-{{replace "/" "-" .EMBEDDING_MODEL_NAME}}.pdf'
 
 tasks:
   default:
@@ -10,23 +21,45 @@ tasks:
       - task: build
 
   build:
-    desc: Render the Quarto report to PDF using uv
+    desc: Render the competencies analysis, then the main Quarto report to PDF using uv
     cmds:
-      - mkdir -p {{.DIST_DIR}}
-      # uv run s'assure que l'environnement défini dans pyproject.toml est prêt
-      # et Quarto utilisera automatiquement le Python de cet environnement.
-      - uv run quarto render rapport.qmd --to pdf --output-dir {{.DIST_DIR}} --execute-daemon=0
+      - task: competences
+      - mkdir -p dist
+      - rm -rf dist/rapport-render
+      - uv run quarto render rapport.qmd --to pdf --output-dir dist/rapport-render --output rapport.pdf --execute-daemon=0
+      - cp dist/rapport-render/rapport.pdf dist/rapport.pdf
+      - rm -rf dist/rapport-render
+
+  competences:
+    desc: Render the competencies clustering report to PDF using uv
+    env:
+      EMBEDDING_MODEL_NAME: "{{.EMBEDDING_MODEL_NAME}}"
+    cmds:
+      - mkdir -p dist
+      - uv run quarto render rapport-competences.qmd --to pdf --output-dir dist/competences-render --output {{.COMPETENCES_PDF_FILE}} --metadata subtitle="Référentiel Métiers OPT-NC - Modèle {{.EMBEDDING_MODEL_NAME}}" --execute-daemon=0
+      - cp dist/competences-render/{{.COMPETENCES_PDF_FILE}} dist/{{.COMPETENCES_PDF_FILE}}
+      - rm -rf dist/competences-render
+      - rm -rf rapport-competences.quarto_ipynb*
+      - rm -f rapport-competences.html
+      - rm -rf dist/img
     sources:
-      - rapport.qmd
+      - rapport-competences.qmd
       - pyproject.toml
     generates:
-      - "{{.DIST_DIR}}/rapport.pdf"
+      - "dist/{{.COMPETENCES_PDF_FILE}}"
+      - img/generated/skills_scores_by_k.png
+      - img/generated/skills_cluster_density.png
+      - img/generated/skills_cluster_heatmap.png
+      - img/generated/skills_umap_visualization.png
 
   clean:
     desc: Clean up generated files and environments
     cmds:
-      - rm -rf {{.DIST_DIR}}
+      - rm -rf dist
       - rm -rf rapport_files
+      - rm -rf rapport-competences_files
       - rm -f rapport.tex
+      - rm -f rapport-competences.tex
+      - rm -f dist/rapport-optns-*.pdf
       - rm -rf .venv
       - rm -f uv.lock

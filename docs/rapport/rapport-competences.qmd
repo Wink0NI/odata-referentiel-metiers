@@ -1,0 +1,882 @@
+---
+title: "Clustering automatique des compétences"
+subtitle: "Référentiel Métiers OPT-NC"
+author: "OPT - NC"
+lang: fr
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    include-in-header:
+      text: |
+        \AtBeginDocument{
+          \hypersetup{
+            colorlinks=true,
+            linkcolor=black,
+            urlcolor=black,
+            citecolor=black,
+            filecolor=black
+          }
+        }
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+```{=latex}
+\newpage
+```
+
+# Objectif
+
+Ce notebook teste une manière automatique de regrouper les compétences du
+référentiel par proximité sémantique. L'objectif est de voir si les libellés de
+compétences font apparaître des ensembles cohérents, sans partir d'une
+classification définie à l'avance.
+
+# Paramètres
+
+Cette section fixe le cadre de calcul utilisé pour produire les résultats. Les
+détails d'interprétation sont développés ensuite, au moment où les résultats
+sont présentés.
+
+```{python}
+#| label: parameters
+#| tags: [parameters]
+#| echo: false
+import os
+
+os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+os.environ.setdefault("TQDM_DISABLE", "1")
+
+EMBEDDING_MODEL_NAME = os.environ.get("EMBEDDING_MODEL_NAME", "BAAI/bge-m3")
+DB_PATH_FROM_REPORT = "../../dist/ref-metiers-opt-nc.duckdb"
+OUTPUT_DIR_FROM_REPORT = "img/generated"
+RANDOM_STATE = 42
+MIN_CLUSTERS = 5
+MAX_CLUSTERS = 20
+CLUSTERING_UMAP_COMPONENTS = 2
+CLUSTERING_UMAP_NEIGHBORS = 15
+CLUSTERING_UMAP_MIN_DIST = 0.0
+UMAP_METRIC = "cosine"
+KMEANS_N_INIT = 10
+TFIDF_NGRAM_RANGE = (1, 2)
+TFIDF_TOP_TERMS = 3
+VISUALIZATION_COMPONENTS = 2
+VISUALIZATION_UMAP_NEIGHBORS = 15
+VISUALIZATION_UMAP_MIN_DIST = 0.1
+HEATMAP_GRID_SIZE = 35
+PLOT_DPI = 300
+```
+
+```{python}
+#| label: parameters-table
+#| output: asis
+#| echo: false
+print(f"- **Modèle d'embedding** : `{EMBEDDING_MODEL_NAME}`.")
+print(f"- **Source des données** : `{DB_PATH_FROM_REPORT}`.")
+print(f"- **Reproductibilité** : graine (seed) `{RANDOM_STATE}`.")
+print(f"- **Nombre de clusters testé** : K varie de `{MIN_CLUSTERS}` à `{MAX_CLUSTERS}`.")
+print(f"- **Réduction avant clustering** : UMAP en `{CLUSTERING_UMAP_COMPONENTS}` dimensions.")
+print(f"- **K-means** : `{KMEANS_N_INIT}` initialisations.")
+print(f"- **Nommage des clusters** : TF-IDF sur des groupes de `{TFIDF_NGRAM_RANGE[0]}` à `{TFIDF_NGRAM_RANGE[1]}` mots.")
+print(f"- **Heatmap** : carte de densité UMAP avec une grille de `{HEATMAP_GRID_SIZE}`.")
+print("- **Visualisation** : UMAP.")
+```
+
+# Rôle des fonctions
+
+Le notebook est découpé en petites fonctions pour garder un traitement lisible :
+une partie charge les données, une autre calcule les embeddings, puis les
+fonctions suivantes produisent les clusters, les scores, les noms de groupes et
+les graphiques. Le détail des résultats est présenté dans les sections qui
+suivent, plutôt que dans cette description du code.
+
+```{python}
+#| label: setup
+#| echo: false
+from collections import defaultdict
+import contextlib
+import io
+import logging
+from pathlib import Path
+import re
+
+import duckdb
+import matplotlib.pyplot as plt
+import numpy as np
+import umap
+from huggingface_hub import scan_cache_dir
+from huggingface_hub.utils import disable_progress_bars
+from sentence_transformers import SentenceTransformer
+from scipy.spatial import ConvexHull
+from sklearn.cluster import KMeans
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score, silhouette_score
+from transformers.utils import logging as transformers_logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
+logger = logging.getLogger("rapport-competences")
+disable_progress_bars()
+transformers_logging.disable_progress_bar()
+
+FRENCH_STOPWORDS = [
+    "a", "au", "aux", "avec", "ce", "ces", "dans", "de", "des", "du", "elle", "en", "et",
+    "eux", "il", "ils", "je", "la", "le", "les", "leur", "leurs", "lui", "ma", "mais", "mes",
+    "mon", "notre", "nos", "on", "ou", "par", "pas", "pour", "qu", "que", "qui", "sa", "se",
+    "ses", "son", "sur", "ta", "te", "tes", "ton", "tu", "un", "une", "vos", "votre", "vous",
+    "y", "d", "l", "s", "t", "m", "c", "j", "lors", "plus", "moins", "non", "oui", "sous",
+    "vers", "savoir", "connaissance", "connaissances", "notion", "notions", "maitrise",
+    "maîtrise", "capacite", "capacité", "capacités", "aptitude", "aptitudes", "techniques",
+    "technique", "faire", "mettre", "oeuvre", "appliquer", "assurer", "gerer", "gestion",
+    "suivi", "analyse", "analyser", "concevoir", "conduite",
+    "opt", "nc", "opt-nc",
+]
+
+current_dir = Path.cwd().resolve()
+if (current_dir / "docs" / "rapport" / "rapport-competences.qmd").exists():
+    PROJECT_ROOT = current_dir
+    REPORT_DIR = current_dir / "docs" / "rapport"
+else:
+    REPORT_DIR = current_dir
+    PROJECT_ROOT = (current_dir / "../..").resolve()
+
+OUTPUT_DIR = (REPORT_DIR / OUTPUT_DIR_FROM_REPORT).resolve()
+DB_PATH = (REPORT_DIR / DB_PATH_FROM_REPORT).resolve()
+
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+os.chdir(PROJECT_ROOT)
+
+logger.info("Projet : %s", PROJECT_ROOT)
+logger.info("Base DuckDB : %s", DB_PATH)
+logger.info("Sorties : %s", OUTPUT_DIR)
+logger.info("Modèle : %s", EMBEDDING_MODEL_NAME)
+
+
+def fetch_competences(db_path: Path) -> list[str]:
+    if not db_path.exists():
+        raise FileNotFoundError(
+            f"La base de données n'existe pas au chemin : {db_path}. Veuillez lancer 'task duckdb' d'abord."
+        )
+
+    with duckdb.connect(str(db_path), read_only=True) as conn:
+        rows = conn.execute("""
+            SELECT DISTINCT nom_competence
+            FROM competence
+            WHERE nom_competence IS NOT NULL
+            ORDER BY nom_competence
+        """).fetchall()
+
+    competences = []
+    for row in rows:
+        competences.append(row[0])
+
+    logger.info("%s compétences chargées depuis la table.", len(competences))
+    return competences
+
+
+def format_number(value: int | None) -> str:
+    if value is None:
+        return "Non disponible"
+    return f"{value:,}".replace(",", " ")
+
+
+def format_storage_size(size_in_bytes: int | None) -> str:
+    if size_in_bytes is None:
+        return "Non disponible"
+
+    size = float(size_in_bytes)
+    for unit in ["o", "Ko", "Mo", "Go", "To"]:
+        if size < 1024 or unit == "To":
+            return f"{size:.2f} {unit}"
+        size = size / 1024
+
+
+def escape_markdown(text: str) -> str:
+    return re.sub(r"([\\`*_{}\[\]()#+\-.!|])", r"\\\1", text)
+
+
+def get_cached_model_size(model_name: str) -> int | None:
+    try:
+        cache_info = scan_cache_dir()
+    except Exception as error:
+        logger.warning("Impossible de lire le cache Hugging Face : %s", error)
+        return None
+
+    for repo in cache_info.repos:
+        if repo.repo_type == "model" and repo.repo_id == model_name:
+            return repo.size_on_disk
+
+    return None
+
+
+def count_model_parameters(model: SentenceTransformer) -> int | None:
+    try:
+        return sum(parameter.numel() for parameter in model.parameters())
+    except Exception as error:
+        logger.warning("Impossible de compter les paramètres du modèle : %s", error)
+        return None
+
+
+def build_model_results(
+    model: SentenceTransformer,
+    model_name: str,
+    best_k: int,
+    k_scores: dict[int, tuple[float, float, float]],
+) -> dict[str, str]:
+    silhouette, calinski_harabasz, davies_bouldin = k_scores[best_k]
+    return {
+        "model_name": model_name,
+        "parameter_count": format_number(count_model_parameters(model)),
+        "storage_size": format_storage_size(get_cached_model_size(model_name)),
+        "suggested_clusters": str(best_k),
+        "silhouette": f"{silhouette:.4f}",
+        "calinski_harabasz": f"{calinski_harabasz:.4f}",
+        "davies_bouldin": f"{davies_bouldin:.4f}",
+    }
+
+
+def encode_competences(competences: list[str], model_name: str) -> tuple[np.ndarray, SentenceTransformer]:
+    logger.info("Chargement du modèle sémantique (%s)...", model_name)
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        model = SentenceTransformer(model_name, trust_remote_code=True)
+
+    logger.info("Génération des embeddings sémantiques...")
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        embeddings = model.encode(competences, normalize_embeddings=True, show_progress_bar=False)
+    return embeddings, model
+
+
+def reduce_for_clustering(embeddings: np.ndarray) -> np.ndarray:
+    reducer = umap.UMAP(
+        n_components=CLUSTERING_UMAP_COMPONENTS,
+        random_state=RANDOM_STATE,
+        metric=UMAP_METRIC,
+        n_neighbors=CLUSTERING_UMAP_NEIGHBORS,
+        min_dist=CLUSTERING_UMAP_MIN_DIST,
+    )
+    return reducer.fit_transform(embeddings)
+
+
+def evaluate_cluster_counts(embeddings_clustering: np.ndarray) -> dict[int, tuple[float, float, float]]:
+    max_k = min(MAX_CLUSTERS, len(embeddings_clustering) - 1)
+    if max_k < MIN_CLUSTERS:
+        raise ValueError(f"Il faut au moins {MIN_CLUSTERS + 1} compétences pour chercher le meilleur K.")
+
+    k_scores = {}
+    for k in range(MIN_CLUSTERS, max_k + 1):
+        labels = KMeans(n_clusters=k, random_state=RANDOM_STATE, n_init=KMEANS_N_INIT).fit_predict(embeddings_clustering)
+        scores = (
+            silhouette_score(embeddings_clustering, labels),
+            calinski_harabasz_score(embeddings_clustering, labels),
+            davies_bouldin_score(embeddings_clustering, labels),
+        )
+        k_scores[k] = scores
+
+    return k_scores
+
+
+def select_best_k(k_scores: dict[int, tuple[float, float, float]]) -> tuple[int, float]:
+    best_k = None
+    best_score = -1.0
+
+    for k, scores in k_scores.items():
+        sil_score = scores[0]
+        if sil_score > best_score:
+            best_k = k
+            best_score = sil_score
+
+    return best_k, best_score
+
+
+def cluster_competences(
+    competences: list[str],
+    embeddings_clustering: np.ndarray,
+    k: int,
+) -> tuple[KMeans, dict[int, list[str]]]:
+    kmeans = KMeans(n_clusters=k, random_state=RANDOM_STATE, n_init=KMEANS_N_INIT)
+    labels = kmeans.fit_predict(embeddings_clustering)
+
+    clusters = defaultdict(list)
+    for competence, label in zip(competences, labels):
+        clusters[int(label)].append(competence)
+
+    return kmeans, dict(clusters)
+
+
+def name_clusters_with_tfidf(clusters: dict[int, list[str]], cluster_ids: list[int]) -> dict[int, str]:
+    documents = []
+    for cid in cluster_ids:
+        competences = clusters[cid]
+        texte_cluster = " ".join(competence.lower() for competence in competences)
+        documents.append(texte_cluster)
+
+    try:
+        vectorizer = TfidfVectorizer(stop_words=FRENCH_STOPWORDS, ngram_range=TFIDF_NGRAM_RANGE)
+        tfidf_matrix = vectorizer.fit_transform(documents)
+        feature_names = vectorizer.get_feature_names_out()
+    except ValueError:
+        names = {}
+        for cid in cluster_ids:
+            names[cid] = f"Cluster #{cid + 1}"
+        return names
+
+    names = {}
+    for index, cid in enumerate(cluster_ids):
+        row_scores = tfidf_matrix.getrow(index).toarray()[0]
+        top_indices = np.argsort(row_scores)[::-1][:TFIDF_TOP_TERMS]
+
+        top_words = []
+        for word_index in top_indices:
+            if row_scores[word_index] > 0:
+                top_words.append(feature_names[word_index])
+
+        if top_words:
+            names[cid] = " / ".join(word.capitalize() for word in top_words)
+        else:
+            names[cid] = f"Cluster #{cid + 1}"
+
+    return names
+
+
+def name_clusters(clusters: dict[int, list[str]]) -> tuple[list[int], dict[int, str]]:
+    cluster_ids = sorted(clusters)
+    cluster_names = name_clusters_with_tfidf(clusters, cluster_ids)
+    return cluster_ids, cluster_names
+
+
+def cluster_indices_by_id(labels: np.ndarray, cluster_ids: list[int]) -> dict[int, list[int]]:
+    cluster_indices = {}
+    for cid in cluster_ids:
+        indices = []
+        for index, label in enumerate(labels):
+            if label == cid:
+                indices.append(index)
+        cluster_indices[cid] = indices
+    return cluster_indices
+
+
+def compute_cluster_density_scores(
+    embeddings_clustering: np.ndarray,
+    cluster_indices: dict[int, list[int]],
+) -> dict[int, float]:
+    density_scores = {}
+    for cid, indices in cluster_indices.items():
+        points = embeddings_clustering[indices]
+        center = np.mean(points, axis=0)
+        distances = np.linalg.norm(points - center, axis=1)
+        density_scores[cid] = float(np.mean(distances))
+    return density_scores
+
+
+def draw_cluster_outline(coords: np.ndarray, indices: list[int], color) -> None:
+    if len(indices) < 3:
+        return
+
+    points = coords[indices]
+    hull = ConvexHull(points)
+    hull_points = points[hull.vertices]
+
+    plt.fill(
+        hull_points[:, 0],
+        hull_points[:, 1],
+        facecolor=color,
+        edgecolor=color,
+        alpha=0.12,
+        linewidth=2,
+        zorder=1,
+    )
+
+
+def generate_and_save_plot(
+    coords: np.ndarray,
+    title: str,
+    filename: str,
+    label_prefix: str,
+    cluster_names: dict[int, str],
+    cluster_indices: dict[int, list[int]],
+    best_k: int,
+    model_name: str,
+    output_dir: Path,
+) -> None:
+    plt.figure(figsize=(14, 11))
+    cmap = plt.colormaps.get_cmap("tab20")
+
+    for cid, indices in cluster_indices.items():
+        draw_cluster_outline(coords, indices, cmap(cid % 20))
+
+    for cid, indices in cluster_indices.items():
+        plt.scatter(
+            coords[indices, 0],
+            coords[indices, 1],
+            color=cmap(cid % 20),
+            label=f"C#{cid + 1}: {cluster_names[cid]}",
+            alpha=0.8,
+            edgecolors="none",
+            s=45,
+            zorder=2,
+        )
+
+    for cid, indices in cluster_indices.items():
+        x_center = np.mean(coords[indices, 0])
+        y_center = np.mean(coords[indices, 1])
+        plt.text(
+            x_center,
+            y_center,
+            f"C{cid + 1}",
+            fontsize=10,
+            fontweight="bold",
+            color="black",
+            ha="center",
+            va="center",
+            zorder=10,
+            bbox={
+                "boxstyle": "round,pad=0.3",
+                "facecolor": "white",
+                "edgecolor": cmap(cid % 20),
+                "linewidth": 1.5,
+                "alpha": 0.85,
+            },
+        )
+
+    plt.title(
+        f"Visualisation {title} (2D) du clustering de compétences (K={best_k})\nModèle : {model_name}",
+        fontsize=14,
+        fontweight="bold",
+    )
+    plt.xlabel(f"{label_prefix} 1", fontsize=11)
+    plt.ylabel(f"{label_prefix} 2", fontsize=11)
+    plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0.0, fontsize="small")
+    plt.grid(True, linestyle="--", alpha=0.5)
+    plt.tight_layout()
+
+    plot_path = output_dir / filename
+    plt.savefig(plot_path, dpi=PLOT_DPI)
+    plt.close()
+
+
+def generate_visualizations(
+    embeddings: np.ndarray,
+    embeddings_clustering: np.ndarray,
+    labels: np.ndarray,
+    cluster_ids: list[int],
+    cluster_names: dict[int, str],
+    best_k: int,
+    model_name: str,
+    output_dir: Path,
+) -> None:
+    cluster_indices = cluster_indices_by_id(labels, cluster_ids)
+
+    if embeddings_clustering.shape[1] == VISUALIZATION_COMPONENTS:
+        umap_coords = embeddings_clustering
+    else:
+        reducer = umap.UMAP(
+            n_components=VISUALIZATION_COMPONENTS,
+            random_state=RANDOM_STATE,
+            metric=UMAP_METRIC,
+            n_neighbors=VISUALIZATION_UMAP_NEIGHBORS,
+            min_dist=VISUALIZATION_UMAP_MIN_DIST,
+        )
+        umap_coords = reducer.fit_transform(embeddings)
+
+    generate_and_save_plot(
+        umap_coords, "UMAP", "skills_umap_visualization.png", "Dimension UMAP",
+        cluster_names, cluster_indices, best_k, model_name, output_dir
+    )
+
+
+def generate_score_plot(k_scores: dict[int, tuple[float, float, float]], best_k: int, output_dir: Path) -> None:
+    rows = sorted(k_scores.items())
+    k_values = [k for k, _scores in rows]
+    silhouettes = [scores[0] for _k, scores in rows]
+    davies_scores = [scores[2] for _k, scores in rows]
+
+    score_series = [
+        ("Silhouette", silhouettes, "Plus haut = meilleur", "#2563eb"),
+        ("Davies-Bouldin", davies_scores, "Plus bas = meilleur", "#dc2626"),
+    ]
+
+    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(9, 6), sharex=True)
+
+    for ax, (title, values, subtitle, color) in zip(axes, score_series):
+        ax.plot(k_values, values, marker="o", linewidth=2, color=color)
+        ax.scatter([best_k], [values[k_values.index(best_k)]], s=90, color=color, edgecolor="black", zorder=3)
+        ax.axvline(best_k, color="black", linestyle="--", linewidth=1, alpha=0.55)
+        ax.set_title(f"{title} - {subtitle}", fontsize=11, fontweight="bold")
+        ax.set_ylabel("Score")
+        ax.grid(True, linestyle="--", alpha=0.35)
+
+    axes[-1].set_xlabel("Nombre de clusters K")
+    axes[-1].set_xticks(k_values)
+    fig.suptitle(f"Comparaison des scores par valeur de K (K retenu = {best_k})", fontsize=13, fontweight="bold")
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
+    fig.savefig(output_dir / "skills_scores_by_k.png", dpi=PLOT_DPI)
+    plt.close(fig)
+
+
+def generate_density_plot(
+    cluster_ids: list[int],
+    cluster_names: dict[int, str],
+    cluster_density_scores: dict[int, float],
+    output_dir: Path,
+) -> None:
+    labels = [f"C{cid + 1}" for cid in cluster_ids]
+    scores = [cluster_density_scores[cid] for cid in cluster_ids]
+
+    fig_height = max(5, 0.45 * len(cluster_ids))
+    fig, ax = plt.subplots(figsize=(10, fig_height))
+    bars = ax.barh(labels, scores, color="#64748b")
+    ax.bar_label(bars, labels=[f"{score:.4f}" for score in scores], padding=4, fontsize=9)
+    ax.set_xlabel("Indice de densité")
+    ax.set_title("Comparaison des indices de densité par cluster", fontsize=13, fontweight="bold")
+    ax.grid(axis="x", linestyle="--", alpha=0.35)
+    ax.invert_yaxis()
+    fig.tight_layout()
+    fig.savefig(output_dir / "skills_cluster_density.png", dpi=PLOT_DPI)
+    plt.close(fig)
+
+
+def generate_cluster_heatmap(
+    embeddings_clustering: np.ndarray,
+    labels: np.ndarray,
+    cluster_ids: list[int],
+    cluster_centers: np.ndarray,
+    output_dir: Path,
+) -> None:
+    fig, ax = plt.subplots(figsize=(10, 8))
+    heatmap = ax.hexbin(
+        embeddings_clustering[:, 0],
+        embeddings_clustering[:, 1],
+        gridsize=HEATMAP_GRID_SIZE,
+        cmap="YlOrRd",
+        mincnt=1,
+    )
+    ax.scatter(
+        embeddings_clustering[:, 0],
+        embeddings_clustering[:, 1],
+        c=labels,
+        cmap="tab20",
+        s=12,
+        alpha=0.35,
+        edgecolors="none",
+    )
+
+    for cid in cluster_ids:
+        center = cluster_centers[cid]
+        ax.text(
+            center[0],
+            center[1],
+            f"C{cid + 1}",
+            fontsize=9,
+            fontweight="bold",
+            ha="center",
+            va="center",
+            bbox={"boxstyle": "round,pad=0.25", "facecolor": "white", "edgecolor": "black", "alpha": 0.85},
+        )
+
+    colorbar = fig.colorbar(heatmap, ax=ax)
+    colorbar.set_label("Nombre de compétences dans la zone")
+    ax.set_xlabel("Dimension UMAP 1")
+    ax.set_ylabel("Dimension UMAP 2")
+    ax.set_title("Carte de chaleur des compétences dans l'espace UMAP", fontsize=13, fontweight="bold")
+    ax.grid(True, linestyle="--", alpha=0.25)
+    fig.tight_layout()
+    fig.savefig(output_dir / "skills_cluster_heatmap.png", dpi=PLOT_DPI)
+    plt.close(fig)
+```
+
+```{python}
+#| label: run-pipeline
+#| echo: false
+competences = fetch_competences(DB_PATH)
+if not competences:
+    raise RuntimeError("Aucune compétence trouvée dans la base DuckDB.")
+
+embeddings, embedding_model = encode_competences(competences, EMBEDDING_MODEL_NAME)
+embeddings_clustering = reduce_for_clustering(embeddings)
+k_scores = evaluate_cluster_counts(embeddings_clustering)
+best_k, best_score = select_best_k(k_scores)
+kmeans, clusters = cluster_competences(competences, embeddings_clustering, best_k)
+cluster_ids, cluster_names = name_clusters(clusters)
+cluster_indices = cluster_indices_by_id(kmeans.labels_, cluster_ids)
+cluster_density_scores = compute_cluster_density_scores(embeddings_clustering, cluster_indices)
+model_results = build_model_results(embedding_model, EMBEDDING_MODEL_NAME, best_k, k_scores)
+generate_score_plot(k_scores, best_k, OUTPUT_DIR)
+generate_density_plot(cluster_ids, cluster_names, cluster_density_scores, OUTPUT_DIR)
+generate_cluster_heatmap(
+    embeddings_clustering,
+    kmeans.labels_,
+    cluster_ids,
+    kmeans.cluster_centers_,
+    OUTPUT_DIR,
+)
+generate_visualizations(
+    embeddings,
+    embeddings_clustering,
+    kmeans.labels_,
+    cluster_ids,
+    cluster_names,
+    best_k,
+    EMBEDDING_MODEL_NAME,
+    OUTPUT_DIR,
+)
+```
+
+# Génération des embeddings
+
+```{python}
+#| label: generate-embeddings
+#| echo: false
+#| output: asis
+embedding_count, embedding_dimensions = embeddings.shape
+print(
+    "La propriété `.shape` indique la taille de la matrice d'embeddings : "
+    "le premier nombre correspond aux compétences encodées, le second au "
+    "nombre de dimensions de chaque vecteur.\n\n"
+    f"`{embeddings.shape}`\n\n"
+    f"{embedding_count} compétences ont été transformées en vecteurs numériques. "
+    f"Chaque vecteur contient {embedding_dimensions} dimensions, qui forment "
+    "la représentation sémantique de la compétence pour le modèle."
+)
+```
+
+# Clustering
+
+```{python}
+#| label: clustering
+#| echo: false
+#| output: asis
+best_silhouette, best_calinski, best_davies = k_scores[best_k]
+print(
+    f"Avec le modèle `{EMBEDDING_MODEL_NAME}`, le meilleur découpage retenu est "
+    f"de **{best_k} clusters**.\n"
+)
+print("::: {.callout-tip title=\"Lecture des scores\"}")
+print(f"- **Silhouette** : `{round(best_silhouette, 4)}`. Plus le score est proche de 1, plus les compétences sont proches de leur propre cluster et éloignées des autres clusters.")
+print(f"- **Calinski-Harabasz** : `{round(best_calinski, 4)}`. Plus le score est élevé, plus les clusters sont globalement séparés les uns des autres.")
+print(f"- **Davies-Bouldin** : `{round(best_davies, 4)}`. Plus le score est faible, plus les clusters sont compacts et distincts.")
+print(":::")
+```
+
+Pour optimiser le partitionnement, nous appliquons une réduction de dimensionnalité
+via UMAP pour passer de l'espace initial à 1024 dimensions à un espace intermédiaire
+à 2 dimensions avant de lancer l'algorithme K-Means. Cette étape n’est pas
+obligatoire en soi, mais elle permet surtout d'atténuer
+le fléau de la dimensionnalité et de former des clusters plus denses et
+sémantiquement cohérents. Dans ce rapport, le graphique UMAP présenté plus loin
+réutilise cette même projection 2D. Les indices de densité et la visualisation
+UMAP sont donc calculés dans le même espace.
+Ce choix en 2D reste un réglage du rapport. Pour affirmer qu’une autre valeur
+serait meilleure, il faudrait comparer les scores sur plusieurs dimensions.
+
+Le choix du nombre de clusters est détaillé dans le tableau suivant.
+
+# Scores par valeur de K
+
+```{python}
+#| label: k-scores
+#| output: asis
+#| echo: false
+print(
+    "Ce tableau montre les résultats obtenus pour chaque nombre de clusters testé. "
+    "Chaque ligne correspond à une hypothèse différente : K=5 signifie que les compétences "
+    "sont découpées en 5 groupes, K=6 en 6 groupes, etc. L'intérêt est de voir comment la qualité "
+    "du découpage évolue quand on augmente le nombre de groupes.\n"
+)
+print("::: {.callout-tip title=\"Lecture des indicateurs\"}")
+print(
+    "Le score de Calinski-Harabasz mesure la séparation globale entre les clusters par rapport à leur "
+    "dispersion interne. Dans cette analyse, il augmente avec le nombre de clusters. Il est donc moins "
+    "utile pour choisir directement K, mais il reste un indicateur complémentaire de structuration globale.\n"
+)
+print(":::")
+
+print("| K | Silhouette | Calinski-Harabasz | Davies-Bouldin |")
+print("|:---:|---:|---:|---:|")
+for k, scores in sorted(k_scores.items()):
+    sil_score, ch_score, db_score = scores
+    marker = "**" if k == best_k else ""
+    print(f"| {marker}{k}{marker} | {marker}{round(sil_score, 4)}{marker} | {round(ch_score, 4)} | {round(db_score, 4)} |")
+print(
+    f"\nDans ce rapport, **K={best_k}** est retenu parce que c'est la ligne où le score de "
+    "Silhouette est le plus élevé. Les scores Calinski-Harabasz et Davies-Bouldin "
+    "complètent cette lecture, mais ne remplacent pas ce critère de choix."
+)
+```
+
+![Comparaison des scores par valeur de K](img/generated/skills_scores_by_k.png)
+
+# Nommage des clusters
+
+Le nom d'un cluster est généré automatiquement à partir des compétences qu'il
+contient. Pour chaque cluster, les libellés de compétences sont regroupés dans
+un même texte, puis une analyse TF-IDF repère les termes les plus
+caractéristiques de ce groupe par rapport aux autres clusters.
+
+Les mots retenus ne sont donc pas forcément les plus fréquents au global, mais sont essentiellement
+ce ceux qui distinguent le cluster des autres groupes. Les mots trop
+génériques du référentiel sont ignorés grâce à une liste de mots vides, afin de
+faire ressortir des termes plus utiles pour nommer les groupes.
+
+```{python}
+#| label: cluster-summary
+#| output: asis
+#| echo: false
+print("| Cluster | Nom | Nombre de compétences | Indice de densité |")
+print("|:---:|---|---:|---:|")
+for cid in cluster_ids:
+    print(f"| {cid + 1} | {cluster_names[cid]} | {len(clusters[cid])} | {round(cluster_density_scores[cid], 4)} |")
+```
+
+![Comparaison des indices de densité par cluster](img/generated/skills_cluster_density.png)
+
+L'indice de densité par cluster correspond à la distance moyenne des compétences au
+centre de leur cluster dans l'espace utilisé pour le clustering. Plus l'indice est
+faible, plus les compétences du cluster sont proches les unes des autres.
+
+```{python}
+#| label: skills heatmap tip
+#| output: asis
+#| echo: false
+print("::: {.callout-tip title=\"A propos de la carte de chaleur\"}")
+print(
+    f"\nLa carte de chaleur suivante reprend l'espace UMAP utilisé pour le clustering. "
+    "Les zones les plus chaudes correspondent aux endroits où les compétences sont les "
+    "plus concentrées. Les points colorés indiquent les clusters, et les étiquettes "
+    "`C1`, `C2`, etc. marquent les centres calculés par K-Means."
+)
+print(":::")
+```
+
+![Carte de chaleur des compétences dans l'espace UMAP](img/generated/skills_cluster_heatmap.png)
+
+# Résultats détaillés
+
+```{python}
+#| label: model-results
+#| output: asis
+#| echo: false
+print("| Information | Valeur |")
+print("|---|---:|")
+print(f"| Nom du modèle | {model_results['model_name']} |")
+print(f"| Nombre de paramètres | {model_results['parameter_count']} |")
+print(f"| Taille du modèle | {model_results['storage_size']} |")
+print(f"| Clusters suggérés | {model_results['suggested_clusters']} |")
+print(f"| Score de Silhouette | {model_results['silhouette']} |")
+print(f"| Score de Calinski-Harabasz | {model_results['calinski_harabasz']} |")
+print(f"| Score de Davies-Bouldin | {model_results['davies_bouldin']} |")
+```
+
+```{python}
+#| label: cluster-details
+#| echo: false
+#| output: asis
+for cid in cluster_ids:
+    print(f"## Cluster {cid + 1} : {escape_markdown(cluster_names[cid])} ({len(clusters[cid])} compétences)\n")
+    for competence in sorted(clusters[cid]):
+        print(f"- {escape_markdown(competence)}")
+    print()
+```
+
+# Visualisation UMAP
+
+```{python}
+#| label: visualizations
+#| echo: false
+logger.info("Visualisations générées dans : %s", OUTPUT_DIR)
+```
+
+Le schéma ci-desous représente les compétences dans le même espace 2D que celui utilisé
+pour calculer les clusters. Chaque point correspond à une compétence, et la
+couleur indique le cluster auquel elle appartient. Deux points proches sur le
+schéma correspondent donc à des compétences proches selon le modèle d'embedding
+et la réduction UMAP.
+
+Les zones colorées donnent une lecture visuelle de l'étendue de chaque cluster.
+Un groupe très resserré indique des compétences proches les unes des autres, et au contraire, un
+groupe plus large indique un cluster plus dispersé. Les axes UMAP 1 et UMAP 2
+servent uniquement à positionner les compétences pour visualiser les proximités.
+
+![](img/generated/skills_umap_visualization.png)
+
+Le choix d'UMAP pour ce schéma s'explique par la nature des données utilisées.
+Les compétences sont représentées par des embeddings, c'est-à-dire des vecteurs
+sémantiques de grande dimension. Pour produire une visualisation lisible, il faut
+donc réduire cet espace à deux dimensions sans perdre entièrement les relations
+de proximité entre compétences. UMAP est adapté à cet usage, car il cherche à
+préserver les voisinages locaux, c'est-à-dire que deux compétences proches dans
+le graphique ont de fortes chances d'être proches dans l'espace sémantique initial.
+
+Une autre méthode aurait pu être utilisée, mais avec des limites différentes.
+La PCA est plus simple et plus directement interprétable, mais elle repose sur
+une projection linéaire. Elle conserve surtout les grands axes de variance et
+peut moins bien faire ressortir des regroupements sémantiques non linéaires.
+UMAP constitue donc ici un compromis entre lisibilité, conservation des proximités
+locales et cohérence avec l'espace utilisé pour le clustering.
+
+Ce schéma doit néanmoins être lu comme une projection, et non comme une preuve
+absolue de séparation des groupes. Il aide à interpréter visuellement les
+clusters, mais l'évaluation du partitionnement repose aussi sur les scores
+présentés précédemment.
+
+\newpage
+
+# Annexes {.unnumbered}
+
+## Glossaire {.unnumbered}
+
+**Embedding :** Représentation numérique d'un texte sous forme de vecteur. Dans
+ce rapport, chaque compétence est transformée en embedding afin de comparer sa
+proximité sémantique avec les autres compétences.
+
+**Modèle d'embedding :** Modèle utilisé pour transformer les libellés de
+compétences en vecteurs numériques. Le choix du modèle influence directement la
+proximité mesurée entre les compétences.
+
+**Dimension :** Nombre de valeurs contenues dans un vecteur. Par exemple, un
+embedding de 1024 dimensions contient 1024 valeurs numériques pour représenter
+une compétence.
+
+**UMAP (Uniform Manifold Approximation and Projection) :** Méthode de réduction
+de dimensionnalité. Elle permet de projeter les embeddings dans un espace plus
+petit, ici en deux dimensions, tout en conservant autant que possible les
+proximités entre compétences.
+
+**K-Means :** Algorithme de clustering qui regroupe les points autour de centres
+de clusters. Dans ce rapport, il sert à former automatiquement des groupes de
+compétences.
+
+**K :** Nombre de clusters demandé à K-Means. Le rapport teste plusieurs valeurs
+de K avant de retenir celle qui obtient le meilleur score de Silhouette.
+
+**Cluster :** Groupe de compétences proches dans l'espace de calcul. Un cluster
+représente donc un ensemble de compétences que le modèle considère comme
+sémantiquement proches.
+
+**Score de Silhouette :** Indicateur local, calculé au niveau de chaque
+compétence. Il compare son rattachement à son propre cluster avec sa proximité au
+cluster voisin le plus proche. Plus le score est élevé, plus les compétences sont
+bien affectées à leur groupe. Dans ce rapport, c'est le critère principal pour
+retenir le nombre de clusters.
+
+**Score de Calinski-Harabasz :** Indicateur global, qui compare la séparation
+entre les clusters avec la dispersion à l'intérieur des clusters. Un score élevé
+signale des groupes globalement plus distincts et plus compacts. Dans cette
+analyse, le score augmente avec le nombre de clusters. Il confirme que le
+découpage se structure quand K augmente, mais il ne donne pas un point d'arrêt
+clair. Il est donc conservé comme repère complémentaire.
+
+**Score de Davies-Bouldin :** Indicateur global qui compare, pour chaque cluster,
+sa dispersion interne avec sa distance aux clusters les plus proches. Il pénalise
+les groupes trop étalés ou trop proches les uns des autres. Plus le score est
+faible, plus les clusters sont compacts et séparés.
+
+**Indice de densité :** Distance moyenne des compétences au centre de leur cluster
+dans l'espace UMAP 2D utilisé pour le clustering. Plus l'indice est faible, plus
+le cluster est compact.
+
+**TF-IDF :** Méthode statistique qui fait ressortir les mots caractéristiques
+d'un groupe de textes. Dans ce rapport, elle sert à proposer un nom lisible pour
+chaque cluster à partir des compétences qu'il contient.

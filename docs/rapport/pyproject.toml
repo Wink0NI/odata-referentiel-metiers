@@ -2,13 +2,21 @@
 name = "rapport-glia"
 version = "0.1.0"
 description = "Rapport de stage chez Glia"
-authors = [{ name = "Votre Nom" }]
+authors = [{ name = "OPT - NC" }]
 dependencies = [
+    "duckdb==1.5.4",
+    "einops>=0.8.0",
     "jupyter>=1.1.1",
     "pyyaml>=6.0.1",
     "ipykernel>=6.29.0",
+    "nbclient==0.10.2",
+    "nbformat==5.10.4",
+    "papermill==2.6.0",
+    "peft>=0.17.0",
+    "matplotlib==3.11.0",
+    "numpy==2.4.6",
+    "scikit-learn==1.9.0",
+    "sentence-transformers[image]==5.6.0",
+    "umap-learn==0.5.12",
 ]
 requires-python = ">=3.14"
-
-[tool.uv]
-dev-dependencies = []
