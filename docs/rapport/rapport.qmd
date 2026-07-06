@@ -198,21 +198,44 @@ projet pour l'OPT-NC et sur les compétences développées pendant le stage.
 ## Contexte et recherches
 
 Dans le cadre de ma première année de Master "Sciences du Logiciel" à
-l’Université de Toulouse, la recherche d'un stage a été une étape importante et
-difficile. Après plusieurs candidatures restées sans réponse de la
-part d'entreprises locales, j’ai décidé d’élargir mes recherches en envoyant une
-candidature spontanée en Nouvelle-Calédonie. Cette démarche un peu originale a
-fonctionné grâce à **Vinh Faucher**, qui a fait passer mon CV en interne à
-l'Office des Postes et Télécommunications de Nouvelle-Calédonie (OPT-NC).
+l’Université de Toulouse, j'ai recherché un stage en lien avec le développement
+logiciel et les données. Après plusieurs candidatures restées sans réponse auprès
+d'entreprises locales, j'ai élargi mes recherches en envoyant une candidature
+spontanée en Nouvelle-Calédonie. Cette démarche a abouti grâce à **Vinh
+Faucher**, qui a transmis mon CV en interne à l'Office des Postes et
+Télécommunications de Nouvelle-Calédonie (OPT-NC).
 
 C'est ainsi que j'ai intégré la **section GLIA** (Génie Logiciel Inter
-Applicatif) de l'OPT-NC. C'est une équipe très axée sur l'innovation, surtout
-sur l'intelligence artificielle et les services connectés. Comme les cours de
-mon Master collaient bien aux projets du service, j'ai pu me plonger rapidement
-dans le concret avec la structuration de données, l'automatisation de
-traitements et la production de documentation technique. Mon tuteur, **Adrien
-Sales**, m'a proposé un sujet idéal pour mon profil, de quoi bien lancer cette
-expérience.
+Applicatif) de l'OPT-NC. Cette section travaille sur des projets logiciels et
+des sujets d'innovation liés aux services internes. Le stage m'a placé dans un
+contexte où il fallait comprendre des données métier, les organiser et produire
+des supports exploitables à partir de ces données.
+
+L'OPT-NC est une structure importante en Nouvelle-Calédonie, avec des métiers
+très différents selon les services. Le référentiel métiers permet de décrire ces
+métiers de manière commune. Il rassemble les familles professionnelles, les
+fiches emplois, les missions et les compétences attendues. Ce type de document
+sert à mieux comprendre les postes, à comparer les compétences demandées et à
+donner une vision plus claire des parcours possibles dans l'entreprise.
+
+Le référentiel utilisé pendant le stage contient 84 fiches emplois réparties dans
+12 familles professionnelles. Cette taille rend le sujet intéressant d'un point
+de vue logiciel. Le projet demande de gérer des données structurées, de garder
+des relations cohérentes entre les familles, les métiers et les compétences, puis
+de produire des supports qui restent alignés entre eux.
+
+Le projet s'inscrit aussi dans une démarche plus large autour des compétences.
+Le référentiel peut être consulté directement et servir de base à d'autres usages
+internes, notamment le suivi des compétences et des parcours professionnels. Dans
+ce contexte, rendre les informations plus lisibles et mieux structurées facilite
+leur consultation, leur mise à jour et leur réutilisation.
+
+L'enjeu Open Data ajoute une contrainte importante. Une donnée exposée au public
+doit être compréhensible sans connaître les fichiers internes du projet. Elle
+doit aussi être assez propre pour être réutilisée par une autre personne ou par
+un autre outil. Le stage devait donc faire le lien entre un contenu métier déjà
+existant et une publication plus claire. Cette étape demande de comprendre le
+sens des données avant de choisir les outils de génération.
 
 ## Sujet du stage
 
@@ -355,24 +378,85 @@ fig.tight_layout(pad=0.4)
 plt.show()
 ```
 
+## Démarche d'ingénierie retenue
+
+La démarche retenue est partie d'une idée simple. Les informations existaient
+déjà dans les fichiers CSV, mais elles devaient être rendues plus faciles à
+consulter et à publier. Il fallait donc éviter de produire chaque support à part.
+Les schémas, les documents et le site devaient venir des mêmes données, afin de
+garder un référentiel cohérent quand une correction était faite.
+
+Avant d'écrire les scripts, j'ai pris le temps de comprendre ce que contenaient
+les fichiers. Il fallait repérer quelles colonnes décrivaient les familles de
+métiers, quelles colonnes décrivaient les métiers, quelles colonnes portaient les
+compétences et comment les niveaux étaient indiqués. Cette lecture était
+nécessaire pour construire une base qui respecte le sens métier des données,
+plutôt qu'une simple organisation de colonnes.
+
+J'ai ensuite organisé les données dans DuckDB. Cette base a ensuite servi à importer les
+CSV, nettoyer les valeurs et produire des sorties plus stables. SQLite a été
+ajouté dans un second temps pour proposer une base plus simple à diffuser et à
+ouvrir avec d'autres outils. Le rôle des deux bases est donc différent (DuckDB
+pour construire et vérifier, SQLite pour partager).
+
+À partir de cette base, j'ai généré les supports du référentiel. Le principe
+était de relancer la chaîne de traitement plutôt que de modifier les documents à
+la main. Si une donnée change, les schémas, le PDF, l'EPUB et le site peuvent
+être reconstruits depuis la même source. Cette organisation rend le projet plus
+facile à reprendre, car les livrables dépendent d'un processus explicite.
+
+J'ai aussi vérifié les résultats au fur et à mesure. Après la partie données, je
+contrôlais les exports et les relations entre les tables. Après la génération
+documentaire, je regardais si les fiches reprenaient les bonnes informations.
+Après le site Hugo, je vérifiais surtout les chemins, la recherche et la
+navigation. Cette vérification progressive m'a permis de corriger les problèmes
+au bon endroit, sans attendre la fin du projet.
+
+La CI/CD a ensuite été ajoutée, afin de contrôler que le projet pouvait être reconstruit dans
+un environnement propre. Pour une publication Open Data, ce point est important, car
+une autre personne doit pouvoir comprendre comment les fichiers sont produits,
+relancer la génération et vérifier le résultat obtenu.
+
+Cette démarche a aussi demandé de choisir un périmètre raisonnable. Pour le site,
+une application web dynamique avec une base interrogée côté serveur aurait été
+plus lourde à maintenir. Un site statique généré depuis les données répondait
+mieux au besoin du stage, car il permettait une consultation publique avec un
+déploiement simple.
+
+Pour l'analyse des compétences, j'ai gardé la même prudence. Les embeddings et le
+clustering servent à repérer des libellés proches, mais ils ne remplacent pas une
+validation métier. Les bases, les documents et le site sont les livrables
+directement exploitables. Les résultats sémantiques servent plutôt à préparer une
+discussion sur les compétences.
+
+Au final, la démarche peut se résumer ainsi :
+
+1. Comprendre les données.
+
+2. Les structurer.
+
+3. Générer les supports.
+
+4. Vérifier le résultat.
+
+Cette organisation répond au besoin du stage, car elle prépare une publication
+lisible, reproductible et documentée du référentiel métiers.
+
 ## Organisation et environnement de travail
 
-Pour mener à bien ce projet, j'ai découpé le travail en plusieurs étapes, de la
-configuration de l'ordinateur jusqu'à la structure finale de la base de données.
-Le travail à organiser concernait à la fois les données, les scripts de
-génération, la documentation et le site web. Sans méthode claire, chaque sortie
-aurait pu être produite séparément, avec un risque d'écart entre les versions.
-J'ai donc regroupé les commandes dans un pipeline automatisé et reproductible,
-inspiré de l'Infrastructure as Code. La configuration du projet est décrite dans
-des fichiers versionnés, puis relancée à la demande pour produire les mêmes
-sorties (PDF, EPUB et site web).
+Le projet contenait initialement les fichiers CSV du référentiel. Mon travail a consisté
+à construire, à partir de ces données, une organisation plus facile à relancer. Les scripts
+SQL et Python servent ensuite à produire les bases, les schémas, les documents et le site.
+Cette séparation est utile, car les fichiers générés ne doivent pas être corrigés à la main.
+Si une information métier est fausse, il faut corriger la donnée source. Si le rendu est
+mauvais, il faut corriger le script ou la configuration qui le produit.
 
-Le développement s'est fait depuis une version forkée du dépôt principal de
+Le développement des jalons s'est fait depuis une version forkée du dépôt principal de
 l'OPT-NC. Mon dépôt de travail servait à préparer les changements. Le dépôt
 principal restait la référence du projet. Ce fonctionnement m'a permis de tester
 et corriger les évolutions sans modifier directement la version de référence.
 
-Le suivi du code s'inspire ensuite d'un fonctionnement de type **Git Flow**. La
+Le suivi du code s'inspire d'un fonctionnement de type **Git Flow**. La
 branche `develop` accueille les évolutions en cours et la branche `main` garde
 l'état stable du projet. Les changements passent par des Pull Requests pour être
 relus avant intégration. Les messages de commit suivent une convention, utilisée
@@ -382,38 +466,35 @@ les notes de version.
 
 ## Ingénierie des données et Modélisation (DuckDB & SQLite)
 
-Le script
+Pour préparer l'ouverture des données, j'ai utilisé le script
 [duck.sql](file:///home/onite/IdeaProjects/odata-referentiel-metiers/src/duck.sql)
-importe les fichiers CSV bruts, nettoie les données et les organise dans la base
-DuckDB. Cette étape répond à l'objectif d'ouverture des données. Avant de publier
-le référentiel, il fallait remplacer des fichiers isolés par un modèle plus
-contrôlable, avec des tables, des clés et des relations explicites. J'ai aussi
-écrit une macro SQL pour uniformiser le format des identifiants (les clés des
-tables). Lors de l'exportation, les lignes sont triées selon leur clé primaire.
-Le contenu reste ainsi dans le même ordre d'une génération à l'autre, ce qui
-évite d'encombrer l'historique Git avec des modifications inutiles.
+afin d'importer les fichiers CSV bruts dans DuckDB, de nettoyer les données et de
+les organiser dans des tables. Avant de publier le référentiel, il fallait passer
+de fichiers isolés à un modèle plus contrôlable, avec des clés et des relations
+explicites entre les familles, les métiers et les compétences. J'ai aussi écrit
+une macro SQL pour uniformiser le format des identifiants (les clés des tables).
+Lors de l'exportation, les lignes sont triées selon leur clé primaire. Le contenu
+reste ainsi dans le même ordre d'une génération à l'autre, ce qui évite
+d'encombrer l'historique Git avec des modifications inutiles.
 
-Pour rendre ces données plus faciles à diffuser, j'ai créé une base **SQLite3**
-avec le script
-[sqlite.sql](file:///home/onite/IdeaProjects/odata-referentiel-metiers/src/sqlite.sql).
+J'ai ensuite créé une base **SQLite3** avec le script
+[sqlite.sql](file:///home/onite/IdeaProjects/odata-referentiel-metiers/src/sqlite.sql),
+pour rendre ces données plus faciles à diffuser.
 Ce script importe les fichiers CSV exportés depuis DuckDB et recrée les mêmes
-vues de vérification. DuckDB sert donc au traitement et à la reconstruction du
-référentiel. SQLite fournit ensuite un format plus simple à réutiliser par
+vues de vérification. SQLite fournit un format plus simple à réutiliser par
 d'autres outils.
 
-J'utilise ensuite **SchemaCrawler** pour produire les diagrammes relationnels
-(PNG, PDF et HTML). L'outil sert aussi à réaliser un audit de qualité
-(linting). Il vérifie la structure de la base et signale des anomalies possibles,
-comme des clés manquantes ou des types de données incohérents. Cette étape aide
-à documenter le modèle et à repérer les problèmes de structure avant de générer
-les livrables.
+J'utilise d'ailleurs **SchemaCrawler** pour produire les diagrammes relationnels
+(PNG, PDF et HTML). L'outil sert aussi à vérifier la structure de la base et à 
+signaler des anomalies possibles, comme des clés manquantes ou des types de données
+incohérents. Cette étape aide à documenter le modèle et à repérer les problèmes de
+structure avant de générer les livrables.
 
 ## Automatisation et Orchestration (Taskfile & uv)
 
 Le fichier
 [Taskfile.yml](file:///home/onite/IdeaProjects/odata-referentiel-metiers/Taskfile.yml)
-sert de point d'entrée pour lancer le projet. Il regroupe les commandes qui
-étaient auparavant séparées et les exécute dans le bon ordre. L'objectif est de
+sert de point d'entrée pour lancer le projet. L'objectif est de
 reconstruire les bases, les schémas, la documentation et le site sans avoir à
 retenir chaque commande à la main. Par défaut, lancer `task` exécute le
 pipeline dans l'ordre suivant :
@@ -437,15 +518,17 @@ pipeline dans l'ordre suivant :
   du thème **Relearn**, en copiant les fichiers de configuration et les styles,
   et en générant les fiches Markdown à partir de la base.
 
-**uv** sert à maîtriser l'environnement Python utilisé par ces commandes. À la
-racine du projet, `.python-version` fixe la version de Python et
-`requirements.txt` liste les dépendances du pipeline principal. La tâche
-`setup-python` crée l'environnement `.venv`, puis installe les dépendances dans
-cet environnement.
+**uv** sert à gérer l'environnement Python utilisé par ces commandes. La version
+de Python est fixée avec `.python-version` et les dépendances du pipeline
+principal sont listées dans `requirements.txt`. La tâche `setup-python` crée
+l'environnement `.venv`, puis installe les dépendances dans cet environnement.
+L'objectif est d'éviter qu'une génération fonctionne sur une machine et échoue
+sur une autre à cause d'une version différente de Python ou d'une bibliothèque.
 
 La partie rapport a sa propre configuration, car elle utilise Quarto et des
-bibliothèques d'analyse de données. `docs/rapport/pyproject.toml` décrit ces
-dépendances et `docs/rapport/uv.lock` fige les versions réellement installées.
+bibliothèques d'analyse de données. On liste les dépendances dans 
+`docs/rapport/pyproject.toml`.
+
 Les tâches du rapport lancent Quarto avec `uv run`. Le rendu ne dépend donc pas
 des bibliothèques installées globalement sur la machine, ce qui rend la
 génération plus facile à reproduire.
@@ -455,34 +538,33 @@ génération plus facile à reproduire.
 Au départ, je vérifiais le projet depuis mon ordinateur. Cette vérification me
 permettait d'avancer, sans garantir qu'une autre personne, ou GitHub, pourrait
 regénérer la base, le PDF, l'EPUB et le site dans les mêmes conditions. J'ai
-donc ajouté des workflows **GitHub Actions** pour refaire automatiquement ces
-contrôles dans un environnement neutre.
+donc ajouté des workflows **GitHub Actions** pour vérifier la génération dans un
+environnement séparé de ma machine.
 
-La CI intervient sur les Pull Requests vers `main` ou `develop`. Elle relance la
-création des bases DuckDB et SQLite, la génération des schémas, la compilation
-de la documentation et la génération du site Hugo. Si un script, un chemin de
-fichier ou une dépendance est cassé, l'erreur apparaît avant la fusion. Cette
-vérification évite de publier un référentiel incomplet ou impossible à
-reconstruire.
+La CI intervient sur les Pull Requests de `develop` vers `main` ou sur les Push
+sur `main` ou `develop`. Elle relance la création des bases DuckDB et SQLite, la
+génération des schémas, la compilation de la documentation et la génération du
+site Hugo. Si un script, un chemin de fichier ou une dépendance est cassé,
+l'erreur apparaît dans le job GitHub Actions correspondant. Cela permet de savoir
+quelle étape a échoué (base, schéma, documentation ou site) et de corriger le bon
+fichier plus rapidement.
 
-Les workflows sont eux-mêmes versionnés dans `.github/workflows`, au même titre
-que le code du projet. Les actions GitHub utilisées sont référencées par SHA
-plutôt que seulement par nom de version, afin de maîtriser plus précisément ce
-qui est exécuté par la CI. Les messages de commit suivent aussi une convention.
-Ils servent ensuite à **Semantic Release** pour calculer la prochaine version.
+J'ai aussi configuré **Dependabot** pour surveiller les dépendances Python et les
+actions GitHub. Les actions GitHub sont référencées par SHA, afin de savoir
+précisément quelle version du code est exécutée dans la CI. Quand une mise à jour
+est disponible, Dependabot ouvre une Pull Request vers `develop`, puis la CI
+vérifie si cette mise à jour reste compatible avec le pipeline. Les outils
+peuvent ainsi évoluer progressivement, sans attendre qu'une dépendance trop
+ancienne devienne bloquante.
 
-J'ai aussi configuré **Dependabot** pour surveiller les dépendances Python et
-les actions GitHub. Quand une mise à jour est disponible, il ouvre une Pull
-Request vers `develop`, puis la CI vérifie si cette mise à jour reste compatible
-avec le pipeline. Les outils peuvent ainsi évoluer progressivement, sans attendre
-qu'une dépendance trop ancienne devienne bloquante.
+Les messages de commit suivent aussi une convention, car ils servent à
+**Semantic Release** pour déduire la prochaine version. Par exemple, un commit
+`fix: corrige le chemin du logo` déclenche une version corrective, tandis qu'un
+commit `feat: ajoute la génération du site Hugo` déclenche une version mineure.
 
-Lorsqu'une modification est acceptée, un workflow de release produit les
+Quand la CI passe sur `main` ou `develop`, un workflow de release produit les
 livrables du projet (bases DuckDB et SQLite, exports CSV et SQL, schémas, PDF,
-EPUB et fichier AsciiDoc). Avec **Semantic Release**, ces fichiers sont rattachés
-à une version précise. Le versioning ne dépend donc pas d'un numéro écrit à la
-main. Il dépend des commits intégrés au dépôt et du workflow GitHub qui publie la
-release. Après une génération réussie sur `main`, le site Hugo est
+EPUB et fichier AsciiDoc). Après une génération réussie sur `main`, le site Hugo est
 reconstruit avec l'adresse GitHub Pages correcte, puis publié automatiquement.
 Un dernier workflow resynchronise ensuite `develop` avec `main` pour limiter les
 conflits lors des développements suivants.
@@ -519,7 +601,7 @@ livre numérique.
 
 ## Portail Web Interactif (Hugo & Thème Relearn)
 
-Pour compléter les versions PDF et EPUB, j'ai mis en place un site statique avec
+En complément, j'ai mis en place un site statique avec
 **Hugo** afin de proposer au public une consultation plus directe du référentiel.
 Le script
 [generate-md.py](file:///home/onite/IdeaProjects/odata-referentiel-metiers/src/generate-md.py)
@@ -527,23 +609,24 @@ extrait les données de la base DuckDB et génère les pages Markdown utilisées
 Hugo (fiches métiers, familles et compétences).
 
 Pour l'interface, j'ai choisi le thème **Relearn**, car il est adapté aux sites
-de documentation. Il fournit déjà une navigation latérale, une recherche et une
-mise en page lisible. J'ai ensuite ajouté des éléments propres au référentiel.
-Le fichier `family-colors.css` associe une couleur à chaque famille de métiers
-et l'applique aux cartes de la page d'accueil. Le script `custom-header.html`
-améliore l'affichage des résultats de recherche en reprenant la couleur de la
-famille concernée.
+de documentation et déjà utilisé dans l'entreprise. Il fournit nativement une
+navigation latérale, une recherche et une mise en page lisible. J'ai ensuite
+ajouté des éléments propres au référentiel. Le fichier `family-colors.css`
+associe une couleur à chaque famille de métiers et l'applique aux éléments de la
+page d'accueil. Le script `custom-header.html` améliore l'affichage des résultats
+de recherche en reprenant la couleur de la famille concernée.
 
-Le site doit aussi fonctionner en local et sur GitHub Pages. Pour cela, le
-fichier `hugo.dynamic.toml` ajuste les chemins des logos et l'adresse du site
-selon l'environnement. Le pied de page récupère la version publiée depuis
+Le fichier `hugo.dynamic.toml` sert à générer la bonne configuration selon le
+contexte d'exécution. Il ajuste l'adresse du site et les chemins des logos au
+moment de la génération. En local, le site n'a pas la même adresse que sur GitHub
+Pages. Le pied de page récupère la version publiée depuis
 `release_version.json`, généré à partir du tag Git. Une personne qui consulte le
 site peut ainsi savoir à quelle version du référentiel correspond la publication.
 
 
 ## Analyse sémantique des compétences
 
-Une fois les données nettoyées, il restait une question plus difficile à traiter
+Une fois les données ordonnées, il restait une question plus difficile à traiter
 avec de simples tableaux. Certaines compétences semblaient proches par leur sens,
 sans forcément être rangées au même endroit dans les fichiers source. J'ai donc
 ajouté une analyse sémantique pour repérer ces rapprochements possibles.
@@ -565,6 +648,39 @@ fait ressortir les mots les plus représentatifs de chaque groupe. Cette analyse
 sert donc à préparer une relecture métier, essentiellement pour repérer des doublons,
 des intitulés proches ou des regroupements à discuter.
 
+## Contrôles et limites de la démarche
+
+Les contrôles réalisés pendant le stage portaient surtout sur la cohérence des
+sorties. Pour les données, je vérifiais que les familles, les métiers et les
+compétences attendues étaient bien présents dans les tables générées. Pour les
+documents, je regardais si les fiches reprenaient les bons regroupements. Pour le
+site, je contrôlais les chemins, la recherche et les liens de navigation.
+
+Ces contrôles permettaient de repérer plus vite l'origine d'un problème. Une
+erreur de donnée peut se retrouver ensuite dans un schéma, dans un PDF, dans un
+EPUB ou dans une page web. Le fait de vérifier les sorties par étape évitait de
+découvrir trop tard une erreur située au début de la chaîne.
+
+J'ai aussi dû accepter certaines limites. La validation technique confirme que le
+projet se reconstruit et que les fichiers sont produits. La validation métier
+reste nécessaire pour juger le sens des regroupements. Par exemple, un groupe de
+compétences peut être correct du point de vue du calcul et rester discutable pour
+les personnes qui connaissent les métiers. C'est pour cette raison que l'analyse
+sémantique est présentée comme une aide à la lecture plutôt que comme une
+décision finale.
+
+La démarche retenue a donc séparé les résultats directement exploitables et les
+résultats exploratoires. Les bases, les schémas, les documents et le site
+répondent à l'objectif principal de publication. Les graphiques liés aux
+compétences servent plutôt à préparer une discussion. Cette séparation rend le
+rapport plus clair, car elle évite de mettre au même niveau un livrable déjà
+utilisable et une piste qui demande encore une validation.
+
+Enfin, cette organisation m'a permis de garder un projet cohérent malgré la
+diversité des livrables. Le même référentiel peut être consulté sous plusieurs
+formes, avec une logique de génération commune. C'est cette cohérence qui donne
+de la valeur au travail réalisé.
+
 
 # Résultats obtenus
 
@@ -581,7 +697,7 @@ compétences. Il sert à expliquer la structure du référentiel et à vérifier
 les données suivent le modèle attendu.
 
 ![Schéma de la base de données du référentiel
-métiers](img/ref-metiers-opt-nc-schema.png)
+métiers](img/ref-metiers-opt-nc-schema.png){width=72%}
 
 La génération documentaire constitue un autre résultat important. La base DuckDB
 alimente la documentation PDF, la version EPUB et le site Hugo. Pour l'OPT-NC,
@@ -591,9 +707,10 @@ pipeline.
 
 Le site web apporte une consultation plus directe du référentiel pour le public.
 Il permet de naviguer par familles, métiers et compétences, avec une recherche
-adaptée aux codes et aux intitulés. Ce résultat rend le référentiel moins
-dépendant d'un fichier figé. Il devient plus facile à parcourir, à partager et à
-réutiliser.
+adaptée aux codes et aux intitulés. Il est publié sur GitHub Pages à l'adresse
+[opt-nc.github.io/odata-referentiel-metiers](https://opt-nc.github.io/odata-referentiel-metiers/).
+Ce résultat rend le référentiel moins dépendant d'un fichier figé. Il devient
+alors plus facile à parcourir, à partager et à réutiliser.
 
 L'analyse des compétences apporte une lecture exploratoire. Le premier graphique
 présente les scores obtenus pour différentes valeurs de K. Il ne prouve pas
@@ -601,7 +718,7 @@ qu'un regroupement est parfait. Il aide surtout à choisir un nombre de groupes 
 manière argumentée.
 
 ![Comparaison des scores de clustering par valeur de
-K](img/generated/skills_scores_by_k.png)
+K](img/generated/skills_scores_by_k.png){width=58%}
 
 La projection UMAP rend ensuite les groupes plus faciles à lire. Chaque point
 correspond à une compétence, et chaque couleur à un cluster. Le graphique permet
@@ -609,114 +726,258 @@ de repérer rapidement les zones où les compétences se concentrent et les grou
 qui semblent plus isolés ou plus mélangés.
 
 ![Projection UMAP des compétences regroupées par
-cluster](img/generated/skills_umap_visualization.png)
-
-La carte des clusters synthétise les groupes obtenus et les termes qui les
-caractérisent le mieux. Elle donne une première lecture des grands thèmes de
-compétences et aide à repérer les regroupements à relire avec les équipes
-métier.
-
-![Synthèse des clusters de compétences et de leurs termes
-dominants](img/generated/skills_cluster_heatmap.png)
+cluster](img/generated/skills_umap_visualization.png){width=58%}
 
 Ces résultats doivent être lus avec prudence. Les embeddings et le clustering
 proposent des pistes de lecture. Ils font ressortir des proximités, des intitulés
 potentiellement redondants et des groupes à relire avec les équipes concernées.
 
-La limite principale du projet concerne la validation métier. La chaîne de
-génération est fonctionnelle. Les regroupements de compétences et certaines
-décisions de structuration doivent encore être discutés avec les personnes
-responsables du référentiel. Le travail réalisé fournit une base propre pour
-cette discussion, sans figer définitivement l'organisation des compétences.
+La limite principale du projet concerne la validation métier.
+Les regroupements de compétences et certaines décisions de structuration
+doivent encore être discutés avec les personnes responsables du référentiel.
+Le travail réalisé fournit une base propre pour cette discussion, sans figer
+définitivement l'organisation des compétences.
 
 
 # Bilan pour l'entreprise et liens avec la formation
 
-Pour l'OPT-NC, l'apport principal est de disposer d'un référentiel métiers prêt à
-être publié et consulté dans une démarche d'Open Data. La fiabilisation des
-données donne une base stable à cette publication. Elle rend les informations
-métiers plus accessibles, plus partageables et moins dépendantes de fichiers
-isolés. Les livrables générés proviennent d'une même chaîne de traitement, ce qui
-limite les écarts entre la base, les documents et le site.
+Pour l'OPT-NC, l'apport principal du stage est d'avoir préparé le référentiel
+métiers pour une publication en Open Data. Les informations existaient déjà dans
+des fichiers du projet, et le travail a consisté à les rendre plus simples à
+consulter, à vérifier et à diffuser. La base DuckDB sert de point d'appui pour
+organiser ces informations. Les exports SQLite, les documents PDF et EPUB, les
+schémas et le site Hugo sont ensuite produits depuis cette même chaîne de
+traitement. Cette organisation réduit le risque d'avoir des versions différentes
+du référentiel selon le support consulté.
 
-Cette approche facilite aussi la maintenance. Le fait de passer par des scripts,
-un Taskfile et des workflows GitHub donne une trace claire de la manière dont les
-documents sont produits. Une personne qui reprend le projet peut comprendre les
-étapes, relancer la génération et vérifier si une modification casse la chaîne.
-C'est un gain important par rapport à un fonctionnement où chaque sortie dépend
-de commandes lancées ponctuellement à la main.
+Le projet apporte également un gain de maintenance pour l'entreprise. Les
+commandes regroupées dans le Taskfile donnent une manière claire de reconstruire
+le projet. Les scripts montrent comment les données sont transformées et les
+workflows GitHub Actions permettent de vérifier que la génération reste possible
+dans un environnement propre. Une personne qui reprend le projet peut donc suivre
+les étapes, relancer les livrables et comprendre plus vite où intervenir en cas
+de modification.
 
-Le projet apporte également un premier support d'aide à la décision. L'analyse
-sémantique met en évidence des rapprochements possibles entre compétences. Elle
-peut servir de point de départ pour repérer des doublons, revoir certains
-intitulés ou préparer une discussion sur l'organisation des compétences avec les
-équipes métier.
+L'analyse sémantique des compétences donne un autre apport, plus exploratoire.
+Elle met en évidence des libellés proches et des regroupements possibles entre
+compétences. Ces résultats servent plutôt de support pour repérer des doublons,
+discuter certains intitulés ou préparer une future amélioration du référentiel.
 
-Ce que j'ai le plus réutilisé du Master concerne surtout la modélisation des
-données. Les cours m'ont aidé à passer des fichiers CSV à une structure plus
-propre, en réfléchissant aux tables, aux clés et aux relations entre les
-informations. Le stage m'a ensuite fait progresser sur des sujets que je
-connaissais moins en pratique (CI/CD, automatisation d'une génération complète,
-gestion d'un environnement Python reproductible et analyse sémantique des
-compétences). Ces apprentissages ont pris du sens parce qu'ils répondaient à un
-besoin réel du référentiel.
+Ce stage m'a permis de réutiliser plusieurs éléments vus en M1 SDL. La
+modélisation m'a aidé à passer de fichiers CSV à une structure plus organisée,
+avec des tables, des relations et des sorties cohérentes. Dans le projet, cette
+structure sert ensuite à produire plusieurs résultats (base DuckDB, base SQLite,
+documents et site). Cela m'a montré pourquoi il faut bien organiser les données
+au départ, surtout quand plusieurs livrables dépendent des mêmes informations.
+
+J'ai aussi réutilisé les bases du développement collaboratif vues en M1. En
+cours, j'avais déjà pratiqué les commandes Git de base (commit, branche, push et
+pull). Pendant le stage, Git servait à suivre un projet plus complet, avec des
+fichiers de données, des scripts, des documents générés et des configurations.
+Cette expérience m'a aidé à comprendre l'intérêt d'un historique clair et de
+changements bien séparés quand un projet doit être repris.
+
+Enfin, le stage a rendu plus concret le lien entre données, commandes et
+environnement de travail. Le Taskfile et `uv` m'ont aidé à regrouper les étapes
+de génération et à relancer le projet plus facilement. Ce point prolonge la
+formation, car il montre qu'un livrable fiable dépend aussi de la manière dont le
+projet est organisé et exécuté.
 
 
 # Bilan des connaissances et des compétences
 
-Ce stage m'a d'abord appris à analyser un problème de données avant de produire
-un livrable. J'ai dû comprendre l'organisation du référentiel, repérer les
-dépendances entre les fichiers et construire un modèle plus stable. Ce travail
-m'a fait progresser en modélisation relationnelle, en SQL et en lecture de
-données métier.
+Ce stage m'a d'abord appris à analyser un besoin avant de produire une solution.
+Au départ, je ne pouvais pas me limiter à générer un site ou un document. Il
+fallait comprendre ce que contenait le référentiel métiers, comment les fichiers
+CSV étaient organisés et quelles informations devaient être exposées au public.
+J'ai donc appris à lire des données métier, à repérer les relations entre les
+familles, les métiers et les compétences, puis à traduire cette compréhension
+dans une structure plus claire.
 
-J'ai ensuite appris à automatiser une chaîne complète. Les tâches mises en place
+J'ai aussi renforcé mes compétences en modélisation de données. J'ai construit
+une base DuckDB pour organiser le référentiel et produire des exports cohérents.
+Ce travail m'a demandé d'identifier les tables utiles, de réfléchir aux clés et
+de vérifier que les relations entre les données restaient lisibles. J'ai ensuite
+produit une version SQLite pour faciliter la diffusion. Cette étape m'a permis de
+mieux comprendre le passage entre des fichiers simples et une base relationnelle
+qui peut servir à générer plusieurs supports.
+
+Le stage m'a également fait progresser en SQL. J'ai utilisé SQL pour importer les
+données, les transformer, les trier et préparer les sorties nécessaires. Avant ce
+stage, j'avais surtout une approche scolaire du SQL. Ici, je l'ai appliqué dans un
+projet complet, avec des données réelles et des contraintes de génération. J'ai
+appris à écrire des requêtes utiles pour produire un résultat concret.
+
+J'ai appris à automatiser une chaîne de traitement. Les tâches mises en place
 enchaînent la création des bases, l'export des données, la génération des
-schémas, la production documentaire et le site web. L'enjeu était de rendre la
-publication du référentiel reproductible. Une autre personne doit pouvoir
-relancer le projet sans reconstituer toutes les commandes à la main.
+schémas, la production documentaire et le site web. Cette automatisation est
+importante, car le projet doit pouvoir être relancé sans refaire toutes les
+commandes à la main. J'ai donc appris à organiser des commandes dans un Taskfile,
+à choisir un ordre d'exécution et à garder une logique simple pour la personne
+qui reprendra le projet.
 
-J'ai aussi renforcé mes compétences techniques en travaillant avec Python,
-DuckDB, SQLite, Hugo, Quarto, uv et GitHub Actions. Ces outils m'ont servi à
-résoudre des problèmes concrets (nettoyer les données, produire plusieurs
-formats, gérer l'environnement Python et vérifier le projet avec la CI/CD). La
-partie CI/CD m'a particulièrement aidé à comprendre le lien entre les commits,
-les versions publiées et les fichiers générés.
+J'ai aussi progressé dans la gestion d'un environnement Python. Avec `uv`, j'ai
+appris à lancer les scripts et les rendus Quarto dans un environnement plus
+maîtrisé. Cela m'a aidé à comprendre pourquoi un projet ne doit pas dépendre
+uniquement de ce qui est installé sur ma machine. Cette compétence est importante
+pour rendre un travail plus facile à refaire, surtout lorsqu'il doit être relancé
+par une autre personne ou par la CI.
 
-L'analyse sémantique m'a appris à prendre du recul sur les résultats produits.
-J'ai manipulé des embeddings, du clustering et des métriques d'évaluation. J'ai
-surtout compris qu'un score ou un graphique sert à ouvrir une discussion, pas à
-valider seul une organisation métier. Cette distinction est importante lorsque
-des résultats techniques peuvent influencer la lecture d'un référentiel.
+La partie CI/CD m'a permis de mieux comprendre le rôle des vérifications
+automatiques. J'ai appris à relier les commits, les workflows GitHub Actions et
+les fichiers générés. L'objectif était de vérifier que le projet pouvait être
+reconstruit dans un environnement propre. Cette expérience m'a montré que la
+qualité d'un projet dépend aussi de sa capacité à être vérifié régulièrement.
 
-Sur le plan humain, le stage m'a demandé d'expliquer mes choix, de documenter
-mon travail et de simplifier certaines solutions quand elles devenaient trop
-lourdes. J'ai gagné en autonomie en cherchant, testant, corrigeant et présentant
-des résultats compréhensibles pour les personnes qui reprendront le projet.
+J'ai développé des compétences en génération documentaire. À partir de la base
+DuckDB, le projet produit plusieurs supports (schémas, PDF, EPUB et site Hugo).
+J'ai appris à organiser une source de données pour alimenter plusieurs formats.
+Cela m'a obligé à faire attention à la cohérence entre les documents. Une
+modification dans les données ou dans les scripts doit se retrouver correctement
+dans tous les livrables.
+
+Le travail sur le site Hugo m'a aussi appris à penser la consultation du
+référentiel. Il fallait que les informations sur les métiers soient accessibles
+et faciles à parcourir. J'ai donc dû prendre en compte la navigation, les pages
+générées, les liens et la recherche. Cette partie m'a permis de relier le
+traitement des données à un usage plus concret pour le public.
+
+L'analyse sémantique des compétences m'a appris à prendre du recul sur les
+résultats produits. J'ai utilisé des embeddings, du clustering et des métriques
+d'évaluation pour repérer des rapprochements possibles entre compétences. J'ai
+compris qu'un score ou un graphique doit servir de piste de lecture. Les
+résultats doivent ensuite être relus avec les personnes qui connaissent le
+métier.
+
+Sur le plan méthodologique, j'ai appris à avancer par étapes. J'ai souvent dû
+tester une solution, constater une limite, corriger, puis vérifier à nouveau. Ce
+fonctionnement m'a aidé à être plus rigoureux. Il m'a aussi appris à garder des
+changements ciblés, à éviter les modifications inutiles et à vérifier le rendu
+final plutôt que de me contenter du code source.
+
+J'ai aussi appris à prioriser. Au début, plusieurs pistes étaient possibles, et
+il aurait été facile de vouloir tout traiter en même temps. J'ai dû distinguer ce
+qui était essentiel pour atteindre l'objectif principal (publier le référentiel)
+et ce qui relevait plutôt d'une amélioration secondaire. Cette compétence m'a aidé
+à garder un fil conducteur dans le projet. Elle m'a aussi permis de ne pas perdre
+de temps sur des éléments moins importants tant que la génération principale
+n'était pas stable.
+
+J'ai aussi renforcé ma capacité à diagnostiquer un problème. Quand un rendu ne
+correspondait pas au résultat attendu, il fallait retrouver l'origine du problème
+dans les données, dans les scripts, dans les chemins de fichiers ou dans la
+configuration de génération. Cette compétence m'a appris à avancer avec méthode.
+Je devais isoler la cause, modifier le bon endroit, relancer la commande utile et
+vérifier le résultat produit.
+
+J'ai renforcé ma capacité à vérifier mon travail. Dans ce projet, une
+modification pouvait avoir un effet sur plusieurs sorties (base DuckDB, base
+SQLite, schémas, PDF, EPUB ou site Hugo). J'ai donc appris à ne pas valider trop
+vite une correction. Il fallait relancer les commandes utiles, regarder le rendu
+produit et vérifier que les chemins, les images et les documents restaient
+cohérents. Cette habitude de vérification est une compétence importante pour la
+suite, car elle évite de livrer un résultat qui fonctionne seulement dans un cas
+précis.
+
+Le stage m'a également appris à adapter mes choix techniques. Certaines solutions
+étaient possibles en théorie et trop lourdes pour le besoin réel du projet.
+J'ai dû simplifier lorsque le code devenait difficile à comprendre ou lorsque la
+maintenance risquait d'être plus compliquée que le problème de départ. Cela m'a
+aidé à comprendre qu'une bonne solution n'est pas forcément la plus complète. Elle
+doit surtout répondre au besoin, rester lisible et pouvoir être reprise par une
+autre personne.
+
+J'ai aussi travaillé ma capacité à documenter. Le projet contient plusieurs
+outils et plusieurs formats de sortie. Sans documentation, il devient vite
+difficile de comprendre quoi lancer et dans quel ordre. J'ai donc appris à écrire
+des explications plus utiles pour une personne qui reprendrait le projet. Cela
+concerne les commandes, les choix techniques et les limites des résultats.
+
+J'ai appris à écrire du code en pensant à la reprise du projet. Les scripts, les
+tâches et les fichiers générés devaient rester compréhensibles pour une autre
+personne, pas uniquement fonctionner sur ma machine. Cette compétence m'a poussé
+à nommer plus clairement les éléments, à supprimer ce qui n'était plus utile et
+à éviter les enchaînements trop difficiles à suivre.
+
+J'ai progressé dans ma manière de communiquer un résultat technique. Il faut
+expliquer à quoi servent les fichiers produits, ce qu'ils permettent de vérifier
+et ce qu'ils ne prouvent pas. Cette compétence a été particulièrement importante
+pour l'analyse sémantique des compétences. J'ai dû présenter les graphiques comme
+des aides à la lecture, et non comme une décision automatique sur l'organisation
+du référentiel.
+
+J'ai aussi développé une meilleure attention aux limites d'un résultat. Dans un
+projet de données, il est possible de produire des graphiques, des scores ou des
+rapprochements entre libellés. Ces sorties doivent être expliquées avec
+prudence. J'ai appris à dire ce qu'un résultat montre, comment il a été obtenu
+et pourquoi il doit parfois être confirmé par une lecture métier.
+
+J'ai aussi appris à être plus attentif au lecteur final. Pour un site ou une
+documentation, la personne qui consulte le contenu doit comprendre où aller, ce
+qu'elle regarde et comment interpréter les informations. Cette attention m'a aidé
+à mieux relier mes choix techniques à un usage concret. Elle m'a aussi fait
+travailler un savoir-être important, celui de se mettre à la place de la personne
+qui utilisera le résultat.
+
+Ce stage m'a enfin aidé à mieux gérer mon autonomie. Je devais chercher des
+solutions, tester des hypothèses et demander un retour quand une décision avait
+un impact sur le livrable. Cette autonomie demandait de préparer un résultat
+suffisamment clair pour pouvoir en discuter, puis de corriger le projet à partir
+des retours obtenus.
+
+Les compétences que je retiens le plus clairement de ce stage sont les
+suivantes :
+
+- Analyser un besoin métier en partant de fichiers existants, afin de comprendre
+  quelles informations devaient être rendues publiques et sous quelle forme.
+
+- Structurer des données dans une base relationnelle, en identifiant les tables,
+  les relations et les sorties nécessaires pour produire plusieurs livrables.
+
+- Automatiser une chaîne de génération avec des tâches reproductibles, afin de
+  reconstruire les bases, les documents et le site sans dépendre d'une suite de
+  commandes manuelles.
+
+- Vérifier un livrable en regardant le résultat généré, en contrôlant les liens,
+  les images, les chemins de fichiers et la cohérence entre les formats.
+
+- Diagnostiquer une erreur en remontant depuis le rendu final vers la donnée, le
+  script ou la configuration responsable du problème.
+
+- Documenter une solution technique pour qu'une autre personne puisse comprendre
+  le rôle des fichiers, les commandes à lancer et les limites connues.
+
+- Expliquer un résultat de données avec prudence, surtout lorsque les scores ou
+  les graphiques donnent des pistes qui doivent être relues par des personnes du
+  métier.
+
+- Prendre en compte l'utilisateur final en organisant la navigation, les pages et
+  les supports pour rendre le référentiel plus simple à consulter.
+
+- Échanger sur mes choix techniques, écouter les retours et accepter de
+  simplifier une solution lorsque cela rendait le projet plus clair.
+
+- Travailler avec plus d'autonomie, en cherchant des solutions, en testant mes
+  hypothèses et en demandant de l'aide quand une décision dépassait le simple
+  cadre technique.
 
 # Objectifs pour la suite en M2
 
-Pour la suite en Master 2, je souhaite continuer à travailler sur des missions
-qui mélangent ingénierie logicielle, données et automatisation. Ce stage m'a
-montré que j'apprécie particulièrement les projets où l'on part d'un besoin
-métier assez concret pour construire ensuite un outil fiable, documenté et
-reproductible.
+Pour la suite en Master 2, je souhaite continuer dans le développement logiciel.
+Ce stage m'a montré que j'aime travailler sur un besoin concret, comprendre ce
+qui existe déjà, puis construire une solution utile et facile à reprendre.
 
-J'aimerais approfondir la partie qualité logicielle : tests, CI/CD, gestion des
-versions, observabilité et déploiement. Ces aspects sont parfois moins visibles
-que le développement d'une fonctionnalité. Ils déterminent pourtant fortement la
-capacité d'un projet à durer.
+En M2, je veux surtout progresser sur la qualité d'un projet. Cela concerne les
+tests, l'organisation du code, la CI/CD et la documentation. Ce sont des points
+que je veux approfondir à partir de ce que j'ai découvert pendant le stage
+(Taskfile, workflows GitHub Actions et génération des documents). Je veux
+maintenant mieux comprendre comment les appliquer sur un projet plus complet.
 
-Je souhaite aussi continuer à explorer l'usage de l'analyse de données et de
-l'intelligence artificielle dans des contextes maîtrisés. L'intérêt est de les
-utiliser lorsqu'ils apportent une lecture supplémentaire ou une aide à la
-décision, avec des limites clairement expliquées.
-
-Si l'occasion se présente, poursuivre dans un environnement comme l'OPT-NC serait
-cohérent avec ce parcours, car les sujets y croisent données, services internes,
-industrialisation et innovation. Dans tous les cas, je vise une mission de M2 qui
-me permette de renforcer mon profil d'ingénieur logiciel capable de concevoir,
-automatiser et expliquer une solution de bout en bout.
+Je souhaite aussi garder un lien avec les données. Le référentiel métiers m'a
+montré qu'un outil dépend aussi des informations utilisées, de leur format et de
+la manière dont elles seront consultées.
+Pour mon M2, une mission autour d'un outil logiciel, avec des données à organiser
+ou à publier, serait donc une suite logique à ce stage.
 
 # Conclusion
 
@@ -746,264 +1007,114 @@ comprendre.
 
 ## Stack technique
 
-La réalisation de ce projet s'appuie sur un ensemble d'outils modernes choisis
-pour répondre à des besoins précis (nettoyage des données, automatisation des
-tâches répétitives et publication de la documentation sous plusieurs formats).
-Cette architecture logicielle permet de maintenir une chaîne de traitement
-propre et reproductible d'un bout à l'autre. Voici la liste des principaux
-logiciels et bibliothèques utilisés :
+La stack technique regroupe les outils utilisés pour transformer les CSV en
+bases, documents, site et analyses. Les principaux outils sont :
 
-- **DuckDB (v1.5.3+)** : C'est le moteur SQL principal du projet. Je l'utilise
-  pour importer les fichiers CSV bruts, puis nettoyer et structurer le
-  référentiel directement en mémoire.
+- **DuckDB** : système de base de données analytique utilisant le langage SQL.
+  Dans le projet, il sert à importer, nettoyer et structurer les CSV.
 
-- **SQLite3** : Je m'en sers comme format de base de données secondaire. Il
-  assure une compatibilité maximale avec d'autres outils et facilite le partage
-  des données nettoyées.
+- **SQLite3** : moteur de base de données relationnelle stocké dans un fichier
+  unique. Dans le projet, il sert à diffuser une version simple à ouvrir avec
+  d'autres outils.
 
-- **Python (v3.14.5+)** : C'est le langage avec lequel j'ai développé tous les
-  scripts de transformation de données et de génération automatique des fichiers
-  Markdown et AsciiDoc.
+- **Python** : langage de programmation utilisé pour écrire des scripts. Dans le
+  projet, il sert à générer les documents, le site et les résultats d'analyse.
 
-- **SchemaCrawler (v17.11.1+)** : Cet outil me permet d'auditer la structure des
-  bases DuckDB et SQLite, puis d'en extraire automatiquement le schéma
-  relationnel.
+- **Taskfile** : outil d'automatisation qui regroupe des commandes dans un même
+  fichier. Dans le projet, il sert à relancer les étapes de génération sans
+  retenir chaque commande à la main.
 
-- **Graphviz** : C'est le moteur de rendu associé à SchemaCrawler pour générer
-  le diagramme relationnel des tables sous forme d'image.
+- **uv** : outil de gestion d'environnement et de dépendances Python. Dans le
+  projet, il sert à utiliser les mêmes versions de Python et des bibliothèques
+  sur chaque machine.
 
-- **Asciidoctor PDF (v2.3.15+)** : Je l'utilise pour compiler le document
-  AsciiDoc et générer le rapport final au format PDF avec un thème de mise en
-  page personnalisé.
+- **SchemaCrawler** : outil d'analyse de structure de base de données. Dans le
+  projet, il sert à vérifier les tables, les colonnes et les relations.
 
-- **Pandoc (v3.9.0.2+)** : Il me sert à convertir le fichier AsciiDoc au format
-  EPUB 3 pour proposer une version livre numérique lisible sur tablette ou
-  liseuse.
+- **Graphviz** : outil de génération de graphes. Dans le projet, il sert à
+  produire les schémas relationnels sous forme d'image.
 
-- **Hugo (v0.163.0+)** et son thème **Relearn** : C'est le générateur de site
-  statique choisi pour créer le portail web interactif et publier facilement les
-  fiches métiers en ligne.
+- **AsciiDoc** : format texte utilisé pour écrire de la documentation structurée.
+  Dans le projet, il sert de source pour produire la documentation PDF et EPUB.
 
-- **Taskfile (v3.50.0+)** : Cet outil d'orchestration me permet d'automatiser et
-  de lancer toutes les étapes du projet (import, génération, compilation) avec
-  des commandes simples.
+- **Asciidoctor PDF** : outil qui transforme un document AsciiDoc en PDF.
 
-- **uv (v0.11.15+)** : C'est le gestionnaire avec lequel je gère l'environnement
-  virtuel Python et fige les dépendances du projet pour qu'il reste
-  reproductible.
+- **Pandoc** : outil de conversion entre formats de documents. Dans le projet, il
+  sert à produire l'EPUB.
 
-- **Quarto** : Je l'utilise pour rédiger et compiler le rapport de stage ainsi
-  que le rapport détaillé sur les compétences. Il permet de mélanger du texte,
-  du code Python et des graphiques dans un même document reproductible.
+- **Quarto** : outil de rédaction et de génération de rapports techniques. Dans
+  le projet, il sert à produire le rapport de stage et le rapport sur les
+  compétences.
 
-- **Sentence Transformers (v5.6.0)** : Cette bibliothèque sert à transformer les
-  libellés de compétences en embeddings afin de pouvoir comparer leur proximité
-  sémantique.
+- **Hugo** : générateur de site statique. Dans le projet, il sert à produire le
+  site web du référentiel.
 
-- **scikit-learn (v1.9.0)** : Je l'utilise pour appliquer K-Means, calculer les
-  scores de clustering et extraire les mots représentatifs des groupes avec
-  TF-IDF.
+- **Relearn** : thème Hugo spécialisé dans les sites de documentation. Dans le
+  projet, il fournit la navigation, la recherche et la mise en page générale.
 
-- **UMAP-learn (v0.5.12)** : Cette bibliothèque sert à réduire la dimension des
-  embeddings pour faciliter le clustering et produire une visualisation lisible
-  en deux dimensions.
+- **Sentence Transformers** : bibliothèque Python qui transforme du texte en
+  vecteurs numériques. Dans le projet, elle sert à comparer les libellés de
+  compétences.
 
-- **NumPy (v2.4.6) et Matplotlib (v3.11.0)** : NumPy permet de manipuler les
-  matrices d'embeddings. Matplotlib permet de générer les graphiques du
-  rapport de compétences.
+- **scikit-learn** : bibliothèque Python d'apprentissage automatique. Dans le
+  projet, elle sert au clustering et au calcul des scores.
+
+- **UMAP-learn** : bibliothèque Python de réduction de dimension. Dans le projet,
+  elle sert à représenter les compétences sur un graphique en deux dimensions.
+
+- **NumPy** : bibliothèque Python de calcul numérique. Dans le projet, elle sert
+  à manipuler les vecteurs de compétences.
+
+- **Matplotlib** : bibliothèque Python de visualisation. Dans le projet, elle
+  sert à produire les graphiques du rapport de compétences.
 
 ## Glossaire
 
-**OPT-NC (Office des Postes et Télécommunications de Nouvelle-Calédonie) :**
-: Établissement public à caractère industriel et commercial fournissant des
-  services postaux et de télécommunications en Nouvelle-Calédonie.
-
-**GLIA :**
-: Section au sein de l'OPT-NC spécialisée dans le développement de solutions
-  technologiques avancées, notamment en intelligence artificielle.
-
-**CSV (Comma Separated Values) :**
-: Format de fichier texte simple pour stocker des données tabulaires, où les
-  valeurs sont séparées par des virgules.
+**Open Data :**
+: Mise à disposition de données pour qu'elles puissent être consultées et
+  réutilisées.
 
 **Référentiel métiers :**
-: Annuaire ou base de données structurée détaillant les métiers, rôles,
-  compétences et autres informations liées aux ressources humaines d'une
-  organisation.
-
-**Stack technique :**
-: Ensemble des technologies et outils logiciels utilisés pour développer et
-  déployer une application ou un système.
+: Ensemble structuré des familles de métiers, métiers et compétences associées.
 
 **Pipeline :**
-: Enchaînement automatisé d'étapes qui transforment des données ou des fichiers
-  d'entrée en livrables finaux. Dans ce projet, le pipeline importe les CSV,
-  construit les bases, génère les schémas, puis produit la documentation PDF,
-  EPUB et web.
+: Suite d'étapes automatisées qui transforment des données ou des fichiers en
+  résultats exploitables.
 
-**Fork :**
-: Copie d'un dépôt Git utilisée pour travailler sans modifier directement le
-  dépôt principal. Dans ce projet, le fork sert à préparer les changements avant
-  de les proposer au dépôt de référence.
-
-**Git Flow :**
-: Organisation Git qui sépare une branche stable, souvent `main`, et une branche
-  de développement, souvent `develop`. Elle permet de préparer les évolutions
-  avant leur intégration dans la version stable.
-
-**CI (Intégration Continue) :**
-: Ensemble de vérifications automatiques lancées lorsqu'une modification est
-  proposée ou envoyée dans le dépôt. Dans ce projet, la CI reconstruit les
-  bases, les schémas, la documentation et le site pour détecter rapidement les
-  erreurs.
-
-**CD (Déploiement Continu) :**
-: Automatisation de la publication après une génération réussie. Ici, la CD
-  régénère le site Hugo puis le publie sur GitHub Pages afin que le portail en
-  ligne reste synchronisé avec le référentiel.
+**CI/CD :**
+: Ensemble de vérifications et de publications automatiques lancées après une
+  modification du code.
 
 **Dependabot :**
-: Service GitHub qui surveille les dépendances d'un projet et propose des mises
-  à jour sous forme de Pull Requests. Dans ce projet, il suit les dépendances
-  Python et les actions GitHub utilisées par la CI/CD.
-
-**Workflow GitHub :**
-: Fichier de configuration qui décrit des actions automatiques à lancer sur
-  GitHub. Dans ce projet, les workflows servent à vérifier les Pull Requests, à
-  générer les livrables et à publier le site.
+: Service GitHub qui propose des mises à jour de dépendances ou d'actions sous
+  forme de Pull Requests.
 
 **GitHub Pages :**
-: Service d'hébergement de sites statiques fourni par GitHub. Dans ce projet, il
-  sert à publier le portail web généré avec Hugo.
-
-**SHA :**
-: Identifiant unique d'un commit ou d'une version précise d'une action GitHub.
-  Référencer une action par SHA permet de savoir exactement quel code est exécuté
-  par un workflow.
-
-**Pull Request :**
-: Proposition de modification envoyée vers une branche du dépôt. Elle permet de
-  vérifier et relire les changements avant de les intégrer définitivement.
-
-**Versioning :**
-: Manière de numéroter les versions d'un projet pour savoir précisément à quel
-  état correspondent les fichiers publiés. Dans ce projet, le versioning permet
-  de rattacher les bases, schémas et documents générés à une release donnée.
+: Service GitHub qui héberge des sites statiques.
 
 **Semantic Release :**
-: Outil qui automatise la création des versions à partir des messages de commit.
-  Il aide à publier une release cohérente avec les changements réellement
-  intégrés dans le dépôt.
-
-**uv :**
-: Gestionnaire d'environnement et de dépendances Python. Il permet de créer un
-  environnement `.venv`, d'installer les dépendances du projet et de lancer les
-  commandes Python ou Quarto dans un cadre reproductible.
-
-**Infrastructure as Code :**
-: Principe qui consiste à décrire une configuration ou un environnement avec des
-  fichiers versionnés plutôt qu'avec des actions manuelles. Dans ce rapport,
-  les tâches sont décrites
-  dans le projet et peuvent être relancées de manière reproductible.
-
-**Orchestration :**
-: Organisation et enchaînement automatique de plusieurs commandes. Ici,
-  Taskfile sert à lancer les étapes du projet dans le bon ordre avec une seule
-  commande.
-
-**Linting :**
-: Contrôle automatique qui cherche des erreurs ou des incohérences sans modifier
-  directement les fichiers. Dans ce projet, le linting SchemaCrawler vérifie la
-  structure de la base de données, par exemple les clés manquantes, les noms de
-  tables ou les types de données suspects.
+: Outil qui calcule une version de publication à partir des messages de commit.
 
 **Schéma relationnel :**
-: Description de la structure d'une base de données : tables, colonnes, clés et
-  relations entre les tables. Les diagrammes générés dans le projet servent à le
-  rendre lisible visuellement.
-
-**Markdown :**
-: Format texte léger utilisé pour rédiger des pages structurées avec des titres,
-  listes, liens ou tableaux. Dans ce projet, il sert à générer les pages du site
-  Hugo.
-
-**AsciiDoc :**
-: Format texte de documentation plus riche que Markdown. Il est utilisé ici
-  comme source intermédiaire pour produire la documentation PDF et EPUB du
-  référentiel métiers.
-
-**EPUB :**
-: Format de livre numérique lisible sur liseuse, tablette ou application de
-  lecture. Il complète le PDF en proposant un document plus adapté aux écrans de
-  lecture.
-
-**Thème Relearn :**
-: Thème Hugo spécialisé dans les sites de documentation. Il fournit la
-  navigation, la recherche, le menu latéral et la mise en page générale du
-  portail web.
+: Représentation des tables, colonnes, clés et relations d'une base de données.
 
 **Embedding :**
-: Représentation numérique d'un texte sous forme de vecteur. Dans ce projet,
-  chaque compétence est transformée en embedding pour comparer sa
-  proximité sémantique avec les autres compétences.
-
-**Modèle d'embedding :**
-: Modèle utilisé pour transformer les libellés de compétences en vecteurs
-  numériques. Le choix du modèle influence directement la proximité mesurée
-  entre les compétences.
-
-**Dimension :**
-: Nombre de valeurs contenues dans un vecteur. Par exemple, un embedding de
-  1024 dimensions contient 1024 valeurs numériques pour représenter une
-  compétence.
+: Représentation numérique d'un texte sous forme de vecteur.
 
 **Clustering :**
-: Méthode qui consiste à regrouper automatiquement des éléments proches. Dans ce
-  projet, elle sert à former des groupes de compétences à partir de leurs
-  embeddings.
+: Méthode qui regroupe automatiquement des éléments proches.
 
 **K-Means :**
-: Algorithme de clustering qui regroupe les points autour de centres de
-  clusters. Dans ce rapport, il sert à former automatiquement des groupes de
-  compétences. La valeur de K doit être choisie avec attention, car elle
-  influence directement la finesse des groupes obtenus.
-
-**K :**
-: Nombre de clusters demandé à K-Means. Le rapport teste plusieurs valeurs de K
-  avant de retenir celle qui obtient le meilleur score de Silhouette.
-
-**Cluster :**
-: Groupe de compétences proches dans l'espace de calcul. Un cluster représente
-  donc un ensemble de compétences que le modèle considère comme sémantiquement
-  proches.
+: Algorithme de clustering qui regroupe des points autour de centres de groupes.
 
 **Score de Silhouette :**
-: Indicateur local, calculé au niveau de chaque compétence. Il compare son
-  rattachement à son propre cluster avec sa proximité au cluster voisin le plus
-  proche. Plus le score est élevé, plus les compétences sont bien affectées à
-  leur groupe. Dans ce rapport, c'est le critère principal pour retenir le
-  nombre de clusters.
-
-**Score de Calinski-Harabasz :**
-: Indicateur global, qui compare la séparation entre les clusters avec la
-  dispersion à l'intérieur des clusters. Un score élevé signale des groupes
-  globalement plus distincts et plus compacts. Dans cette analyse, le score
-  augmente avec le nombre de clusters. Il confirme que le découpage se structure
-  quand K augmente. Il ne donne pas de point d'arrêt clair et reste donc un
-  repère complémentaire.
-
-**Score de Davies-Bouldin :**
-: Indicateur global qui compare, pour chaque cluster, sa dispersion interne avec
-  sa distance aux clusters les plus proches. Il pénalise les groupes trop étalés
-  ou trop proches les uns des autres. Plus le score est faible, plus les
-  clusters sont compacts et séparés.
+: Indicateur utilisé pour vérifier si les compétences sont bien séparées entre
+  les groupes.
 
 **UMAP (Uniform Manifold Approximation and Projection) :**
-: Méthode de réduction de dimension qui permet de projeter les embeddings dans
-  un espace plus simple à visualiser. Elle sert ici à représenter les compétences
-  sur un graphique en deux dimensions.
+: Méthode de réduction de dimension qui projette des vecteurs dans un espace plus
+  simple à visualiser.
 
 **TF-IDF :**
-: Méthode statistique qui fait ressortir les mots importants d'un groupe de
-  textes par rapport aux autres groupes. Dans ce rapport, elle sert à proposer
-  un nom lisible pour chaque cluster à partir des compétences qu'il contient.
+: Méthode statistique qui fait ressortir les mots importants d'un texte ou d'un
+  groupe de textes.
