@@ -34,6 +34,7 @@ By reusing a database and a Python script to produce the documentation, the refe
 - `data/input/`: CSV files and input data
 - `data/output/csv/`: Generated CSV exports
 - `data/output/docs/`: Generated documentation (AsciiDoc and PDF)
+- `docs/rapport/`: Quarto reports, including the competency clustering report
 - `etc/themes/pdf-theme.yml`: PDF formatting theme for Asciidoctor
 - `Taskfile.yml`: Execute automated tasks with only one command line
 
@@ -77,6 +78,41 @@ task site
 
 This command creates the Hugo site in `site/`, generates the Markdown pages with `src/generate-md.py`, installs the Relearn theme, then builds the static website in `site/public/`.
 
+## 🧠 Competency Embeddings and Report
+The repository also contains a Quarto report dedicated to competency analysis:
+`docs/rapport/rapport-competences.qmd`.
+
+This report reads the generated DuckDB database, extracts the competency labels,
+and converts each label into an embedding. An embedding is a numerical
+representation of text. In this project, embeddings are used to compare
+competencies by semantic proximity, then group similar labels with clustering.
+
+The report does the following:
+
+- loads the distinct competency labels from `dist/ref-metiers-opt-nc.duckdb`
+- computes text embeddings with the configured Sentence Transformers model
+- tests several values of K for K-Means clustering
+- evaluates the clusters with metrics such as the Silhouette score
+- generates visualizations in `docs/rapport/img/generated/`
+- builds a PDF report in `docs/rapport/dist/`
+
+To generate only the competency analysis report:
+
+```bash
+cd docs/rapport
+task competences
+```
+
+To generate the competency report and then the main internship report:
+
+```bash
+cd docs/rapport
+task
+```
+
+The active embedding model is configured in `docs/rapport/Taskfile.yml` with
+`EMBEDDING_MODEL_NAME`. The default model is currently `BAAI/bge-m3`.
+
 ## 📦 What the Generation Produces
 - `dist/ref-metiers-opt-nc.duckdb` : Built DuckDB database
 - `dist/ref-metiers-opt-nc.sqlite` : Built SQLite database
@@ -86,6 +122,8 @@ This command creates the Hugo site in `site/`, generates the Markdown pages with
 - `dist/ref-metiers-opt-nc-schema.pdf` : PDF format of the schema
 - `data/output/docs/referentiel_metiers.pdf` : Final PDF document (via Asciidoctor)
 - `site/public/` : Generated Hugo website
+- `docs/rapport/dist/rapport-competences-model-*.pdf` : Competency clustering report
+- `docs/rapport/img/generated/` : Generated competency analysis charts
 - And the exported CSVs from DuckDB located in `data/output/csv/`
 
 ## 🛠️ And you can also modify the Reference Framework !
