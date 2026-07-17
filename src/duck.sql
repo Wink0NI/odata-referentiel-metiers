@@ -580,7 +580,7 @@ COMMENT ON COLUMN vw_groupes_manquants_par_metier.nom_metier IS 'Nom usuel du m�
 COMMENT ON COLUMN vw_groupes_manquants_par_metier.groupe_manquant IS 'Le groupe de compétences qui fait défaut à ce métier (ex: Savoir-être)';
 
 CREATE OR REPLACE VIEW vw_metiers_qui_possede_niveau_competence_0 AS
-SELECT m.code_metier, m.nom_metier, c.code_competence, c.nom_competence
+SELECT m.code_metier, m.nom_metier, c.code_competence, c.nom_competence, mc.niveau_requis
 FROM metier m
 JOIN metier_competence mc ON m.code_metier = mc.code_metier
 JOIN competence c ON mc.code_competence = c.code_competence
@@ -591,6 +591,7 @@ COMMENT ON COLUMN vw_metiers_qui_possede_niveau_competence_0.code_metier IS 'Cod
 COMMENT ON COLUMN vw_metiers_qui_possede_niveau_competence_0.nom_metier IS 'Nom du métier impacté';
 COMMENT ON COLUMN vw_metiers_qui_possede_niveau_competence_0.code_competence IS 'Code de la compétence associée';
 COMMENT ON COLUMN vw_metiers_qui_possede_niveau_competence_0.nom_competence IS 'Nom de la compétence dont le niveau n''a pas été correctement évalué (0)';
+COMMENT ON COLUMN vw_metiers_qui_possede_niveau_competence_0.niveau_requis IS 'Niveau requis pour cette compétence dans ce métier';
 
 CREATE OR REPLACE VIEW vw_competences_dupliquees AS
 SELECT nom_competence, COUNT(*) AS freq

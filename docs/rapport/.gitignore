@@ -1,12 +1,17 @@
 /.quarto/
 .task
 .cache
+.uv-cache
 **/*.quarto_ipynb
 
 rapport-competences_files/
 rapport_files/
 
 img/generated/
+img/ci-processus.png
+img/gem-metiers-extrait.png
+img/ref-metiers-opt-nc-schema-tables.png
+
 uv.lock
 rapport.tex
 rapport.toc
@@ -18,3 +23,11 @@ rapport-competences.toc
 rapport-competences.aux
 rapport-competences.log
 rapport-competences.pdf
+presentation.tex
+presentation.toc
+presentation.aux
+presentation.log
+presentation.pdf
+presentation.nav
+presentation.snm
+presentation.vrb

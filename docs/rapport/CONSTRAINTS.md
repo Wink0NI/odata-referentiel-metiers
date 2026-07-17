@@ -34,6 +34,7 @@ Ce document récapitule les contraintes extraites du fichier `Cadrage du rapport
 - Préciser l'outil utilisé et son mode d'exploitation (fond, forme, etc.).
 
 ## ✍️ Autres contraintes de rédaction
+- Chaque ligne de texte brut (.qmd, .md, etc.) doit faire au maximum 80 caractères.
 - Chaque partie doit expliquer clairement le **quoi**, le **comment**
   et le **pourquoi**.
 - Utiliser les deux-points uniquement lorsqu'ils introduisent une vraie liste.

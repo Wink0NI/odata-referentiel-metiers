@@ -245,7 +245,7 @@ WHERE gc.libelle <> 'Manager'
 ORDER BY m.code_metier;
 
 CREATE VIEW vw_metiers_qui_possede_niveau_competence_0 AS
-SELECT m.code_metier, m.nom_metier, c.code_competence, c.nom_competence
+SELECT m.code_metier, m.nom_metier, c.code_competence, c.nom_competence, mc.niveau_requis
 FROM metier m
 JOIN metier_competence mc ON m.code_metier = mc.code_metier
 JOIN competence c ON mc.code_competence = c.code_competence

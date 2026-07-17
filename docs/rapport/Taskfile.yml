@@ -20,14 +20,14 @@ tasks:
     cmds:
       - task: clean
       - task: build
+      - task: presentation
 
   build:
     desc: Render the competencies analysis, then the main Quarto report to PDF using uv
     cmds:
       - defer: { task: post-clean }
       - task: competences
-      - mkdir -p dist
-      - rm -rf dist/rapport-render
+      - mkdir -p dist img/generated
       - uv run quarto render rapport.qmd --to pdf --output-dir dist/rapport-render --output rapport.pdf --execute-daemon=0
       - cp dist/rapport-render/rapport.pdf dist/rapport.pdf
       - rm -rf dist/rapport-render
@@ -42,9 +42,6 @@ tasks:
       - uv run quarto render rapport-competences.qmd --to pdf --output-dir dist/competences-render --output {{.COMPETENCES_PDF_FILE}} --metadata subtitle="Référentiel Métiers OPT-NC - Modèle {{.EMBEDDING_MODEL_NAME}}" --execute-daemon=0
       - cp dist/competences-render/{{.COMPETENCES_PDF_FILE}} dist/{{.COMPETENCES_PDF_FILE}}
       - rm -rf dist/competences-render
-      - rm -rf rapport-competences.quarto_ipynb*
-      - rm -f rapport-competences.html
-      - rm -rf dist/img
     sources:
       - rapport-competences.qmd
       - pyproject.toml
@@ -54,6 +51,29 @@ tasks:
       - img/generated/skills_cluster_density.png
       - img/generated/skills_cluster_heatmap.png
       - img/generated/skills_umap_visualization.png
+
+  presentation:
+    desc: Render the oral presentation to PDF using uv
+    env:
+      UV_CACHE_DIR: .uv-cache
+    cmds:
+      - defer: { task: post-clean }
+      - mkdir -p dist
+      - uv run quarto render presentation.qmd --to beamer --output-dir dist/presentation-render --output presentation.pdf --execute-daemon=0
+      - cp dist/presentation-render/presentation.pdf dist/presentation.pdf
+      - rm -rf dist/presentation-render
+    sources:
+      - presentation.qmd
+      - img/logo_universite.png
+      - img/logo_opt.png
+      - img/OPT_NC_2.png
+      - img/gem-metiers-extrait.png
+      - img/ci-processus.png
+      - img/ref-metiers-opt-nc-schema-tables.png
+      - img/generated/skills_scores_by_k.png
+      - img/generated/skills_umap_visualization.png
+    generates:
+      - dist/presentation.pdf
 
   clean:
     desc: Clean up generated files and environments
@@ -69,13 +89,26 @@ tasks:
     cmds:
       - rm -rf rapport_files
       - rm -rf rapport-competences_files
+      - rm -rf presentation_files
+      - rm -f rapport.quarto_ipynb*
       - rm -f rapport.tex
       - rm -f rapport.toc
       - rm -f rapport.aux
       - rm -f rapport.log
       - rm -f rapport.pdf
+      - rm -f rapport-competences.quarto_ipynb*
       - rm -f rapport-competences.tex
       - rm -f rapport-competences.toc
       - rm -f rapport-competences.aux
       - rm -f rapport-competences.log
       - rm -f rapport-competences.pdf
+      - rm -f rapport-competences.html
+      - rm -f presentation.quarto_ipynb*
+      - rm -f presentation.tex
+      - rm -f presentation.toc
+      - rm -f presentation.log
+      - rm -f presentation.pdf
+      - rm -f presentation.nav
+      - rm -f presentation.snm
+      - rm -f presentation.vrb
+      - rm -f presentation.pdf
