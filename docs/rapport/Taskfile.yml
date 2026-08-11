@@ -27,7 +27,7 @@ tasks:
     cmds:
       - defer: { task: post-clean }
       - task: competences
-      - mkdir -p dist img/generated
+      - mkdir -p dist img/generated/competences
       - uv run quarto render rapport.qmd --to pdf --output-dir dist/rapport-render --output rapport.pdf --execute-daemon=0
       - cp dist/rapport-render/rapport.pdf dist/rapport.pdf
       - rm -rf dist/rapport-render
@@ -47,10 +47,10 @@ tasks:
       - pyproject.toml
     generates:
       - "dist/{{.COMPETENCES_PDF_FILE}}"
-      - img/generated/skills_scores_by_k.png
-      - img/generated/skills_cluster_density.png
-      - img/generated/skills_cluster_heatmap.png
-      - img/generated/skills_umap_visualization.png
+      - img/generated/competences/skills_scores_by_k.png
+      - img/generated/competences/skills_cluster_density.png
+      - img/generated/competences/skills_cluster_heatmap.png
+      - img/generated/competences/skills_umap_visualization.png
 
   presentation:
     desc: Render the oral presentation to PDF using uv
@@ -64,14 +64,18 @@ tasks:
       - rm -rf dist/presentation-render
     sources:
       - presentation.qmd
-      - img/logo_universite.png
-      - img/logo_opt.png
-      - img/OPT_NC_2.png
-      - img/gem-metiers-extrait.png
-      - img/ci-processus.png
-      - img/ref-metiers-opt-nc-schema-tables.png
-      - img/generated/skills_scores_by_k.png
-      - img/generated/skills_umap_visualization.png
+      - img/logo/logo_universite.png
+      - img/logo/logo_opt.png
+      - img/logo/OPT_NC_2.png
+      - img/logo/SDL.png
+      - img/captures/gem-metiers-extrait.png
+      - img/captures/task-list.png
+      - img/captures/ci-processus.png
+      - img/schemas/ref-metiers-opt-nc-schema-tables.png
+      - img/annexes/qualite-donnees-niveau-requis-zero.png
+      - img/annexes/qualite-donnees-doublon-techniques-management.png
+      - img/generated/competences/skills_scores_by_k.png
+      - img/generated/competences/skills_umap_visualization.png
     generates:
       - dist/presentation.pdf
 

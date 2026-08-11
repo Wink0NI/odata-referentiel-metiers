@@ -8,9 +8,9 @@ rapport-competences_files/
 rapport_files/
 
 img/generated/
-img/ci-processus.png
-img/gem-metiers-extrait.png
-img/ref-metiers-opt-nc-schema-tables.png
+img/captures/ci-processus.png
+img/captures/gem-metiers-extrait.png
+img/schemas/ref-metiers-opt-nc-schema-tables.png
 
 uv.lock
 rapport.tex

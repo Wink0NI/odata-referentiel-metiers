@@ -1,0 +1,243 @@
+Script de la presentation orale - 14 minutes
+
+Ce script est reserve a la soutenance. Il suit les diapositives de
+`presentation.qmd` et reprend certaines idees du script video, dans une version
+plus courte et adaptee a un oral devant le jury.
+
+
+Diapositive 1 - Titre
+Temps vise : 0 min 00 a 0 min 40
+
+Bonjour a toutes et a tous. Je m'appelle Olivier Dinan.
+
+J'ai realise mon stage a l'OPT-NC, l'etablissement public charge des
+telecommunications, de la poste et des services financiers.
+
+J'ai rejoint la section GLIA, pour Genie Logiciel Inter-Applicatif, rattachee a
+la Direction des systemes d'information. Cette section facilite les echanges
+de donnees et de services entre les applications.
+
+Je vais vous presenter mon travail sur la structuration interoperable du
+referentiel metiers de l'OPT-NC.
+
+
+Diapositive 2 - Du referentiel aux supports de consultation
+Temps vise : 0 min 40 a 2 min 00
+
+L'entreprise disposait deja d'un referentiel regroupant les metiers et les
+competences associees. Mon maitre de stage, Adrien SALES, me l'a fourni sous
+la forme de trois fichiers CSV contenant les metiers, les competences et leurs
+relations.
+
+L'information etait presente, mais il restait difficile d'avoir une vue globale
+des relations et de produire plusieurs supports coherents.
+
+Le schema resume donc mon objectif. Les trois CSV, a gauche, sont transformes
+en bases relationnelles, principalement avec DuckDB, puis repris dans SQLite
+pour rendre le référentiel accessible avec des outils utilisant ce format.
+
+A partir de cette structure, SchemaCrawler documente la base en generant des
+schemas qui montrent les tables et leurs relations. Le projet produit aussi le
+referentiel aux formats PDF et EPUB, une version web et une analyse semantique
+des competences.
+
+Tous ces livrables sont ainsi regeneres depuis les memes donnees structurees.
+
+
+Diapositive 3 - Processus
+Temps vise : 2 min 00 a 2 min 50
+
+De maniere generale, j'ai organise mon travail autour de quatre etapes :
+
+Tout d'abord, je cherche a comprendre ce qu'il faut produire. J'analyse ce qui
+existe et les contraintes a respecter.
+
+Je structure ensuite la solution en definissant les scripts et les outils
+necessaires.
+
+Une fois la solution preparee, je lance les commandes qui produisent les
+livrables.
+
+Enfin, je verifie que le resultat obtenu correspond au besoin de depart. S'il
+ne parait pas coherent, j'adapte la solution a partir des retours de mon
+maitre de stage, puis je relance la generation.
+
+Diapositive 4 - Structuration des donnees
+Temps vise : 2 min 50 a 4 min 35
+
+Prenons comme exemple ma premiere tache, qui consistait a structurer les donnees 
+a partir des CSV.
+
+Voici un extrait du fichier des metiers.
+
+[Montrer l'association de certaines colonnes aux tables correspondantes]
+
+DuckDB permet de lire directement les CSV et de structurer leurs donnees avec
+SQL. Il fonctionne en mode serverless et enregistre la base obtenue dans un
+fichier local, sans serveur a installer.
+
+Le script SQL construit les tables et leurs relations, puis exporte des CSV
+nettoyes.
+
+Un second script reprend ces CSV pour produire une base SQLite avec les memes
+tables et vues.
+
+On passe ainsi de fichiers destines au stockage a un modele ou les relations 
+sont explicites.
+
+DuckDB realise la transformation principale. SQLite fournit une copie du
+referentiel dans un format tres repandu, que les utilisateurs peuvent ouvrir
+avec d'autres logiciels.
+
+
+Diapositive 5 - Deux situations a examiner
+Temps vise : 4 min 35 a 5 min 40
+
+Structurer les donnees m'a aussi permis de faire ressortir des anomalies
+potentielles.
+
+Par exemple, certaines associations affichent un niveau requis egal a zero,
+alors que l'echelle definit uniquement les niveaux un a quatre. Dans le CSV,
+ces niveaux ne sont pas renseignes et le script remplace les valeurs absentes
+par zero. Sans correction, une information manquante ressemble donc a un niveau
+valide et peut fausser la lecture ou les calculs de moyenne.
+
+Mon maitre de stage m'a signale un second cas. Deux codes differents portent le
+meme libelle, "Techniques de management". A partir de ce constat, j'ai cree une
+vue SQL pour verifier si d'autres libelles etaient associes a plusieurs codes.
+
+Les vues permettent de retrouver ces cas dans la base. Elles signalent les
+données à relire, mais la correction doit être décidée par des personnes qui
+connaissent le référentiel.
+
+
+Diapositive 6 - Automatisation avec le Taskfile
+Temps vise : 5 min 40 a 6 min 40
+
+Pour produire les livrables, je devais lancer plusieurs commandes dans un ordre
+precis. Au fil du projet, leur nombre a augmente et il devenait difficile de
+toutes les memoriser. J'ai donc utilise un Taskfile, un gestionnaire de taches
+qui centralise les commandes, leurs dependances et leur ordre d'execution.
+
+La commande `task --list` affiche les taches disponibles. Par exemple,
+`task duckdb` construit la base principale, `task docs` produit les documents
+et `task site` genere le site.
+
+Le Taskfile stocke ainsi les commandes et leur ordre dans le depot. Une autre
+personne peut relancer une etape sans devoir retrouver elle-meme tous les
+scripts a executer.
+
+
+Diapositive 7 - Verification et deploiement automatises
+Temps vise : 6 min 40 a 8 min 15
+
+Le projet fonctionnait sur mon poste, mais il fallait aussi verifier qu'il
+pouvait etre reconstruit ailleurs. J'ai donc utilise GitHub Actions pour mettre
+en place une integration continue, ou CI. Elle intervient dans deux cas.
+
+Le premier cas se produit lorsque des changements sont envoyes sur `main` ou
+`develop`. Le workflow execute alors Semantic Release. Cet outil applique des
+regles predefinies aux messages de commit pour calculer la prochaine version.
+Le type de modification indique influence ce calcul, puis la version est
+publiee sans intervention de l'utilisateur. Le workflow associe ensuite les
+bases, les schemas et les documents a cette version.
+
+Le deuxieme cas se produit lorsqu'on ouvre une pull request. La CI relance la
+generation. Si une etape echoue, GitHub signale le probleme afin qu'il soit
+corrige avant d'accepter la modification.
+
+Le deploiement continu, ou CD, est gere separement. Lorsque la CI se termine
+avec succes sur la branche `main`, un autre workflow genere le site et le publie
+sur GitHub Pages.
+
+
+Diapositive 8 - Referentiel web
+Temps vise : 8 min 15 a 9 min 20
+
+J'ai egalement realise un site pour rendre le referentiel plus accessible. Vous
+pouvez l'ouvrir en scannant ce QR code.
+
+Pour cette version web, j'ai utilise Hugo. Ce generateur de sites statiques
+transforme des contenus Markdown et des modeles de pages en fichiers HTML. Il
+convient ici parce que le referentiel est genere a l'avance et peut etre publie
+sans serveur applicatif.
+
+Dans ce projet, un script Python lit la base DuckDB et cree les pages des
+familles et des metiers au format Markdown. Hugo les combine ensuite avec le
+theme Relearn pour produire le site. Ce theme fournit la navigation et la
+recherche.
+
+Sur le site, l'utilisateur peut passer d'une famille a un metier, consulter les
+competences associees et rechercher un code ou un intitule.
+
+
+Diapositive 9 - Analyse exploratoire des competences
+Temps vise : 9 min 20 a 12 min 00
+
+Mon maître de stage m’a ensuite proposé d’explorer les ressemblances entre les
+compétences du référentiel.
+
+Cette analyse m'a amene a poser la question suivante. Existe-t-il des
+competences qui se ressemblent dans leur formulation ou dans leur sens ?
+
+Pour apporter un premier element de reponse, j'ai produit ce diagramme UMAP a
+partir des libelles extraits de la base DuckDB.
+
+Un modele d'embedding transforme d'abord chaque competence en une
+representation numerique de son sens. K-Means rassemble ensuite les
+representations proches pour former des groupes.
+
+Ces representations contiennent trop de dimensions pour etre affichees
+directement. UMAP est une methode de visualisation qui les replace sur un plan
+en deux dimensions, afin de rendre les rapprochements observables. Sur le
+diagramme, un point represente une competence et une couleur represente un
+groupe.
+
+On remarque, par exemple, que les points du groupe 9 sont presque superposes.
+Cela suggere que ses competences sont tres proches dans leur formulation ou
+dans leur sens. Les groupes C8 et C9 occupent au contraire deux zones eloignees,
+ce qui indique moins de ressemblances entre leurs competences.
+
+K-Means identifie seulement les groupes par un numero. Pour leur proposer un
+intitule lie a leur contenu, j'ai utilise TF-IDF. Cette methode fait ressortir
+les termes frequents dans un groupe et moins presents dans les autres.
+
+Le groupe 9 recoit ainsi le nom `Services, Systemes d'information, Procedures`.
+
+L'ensemble de l'analyse est presente dans un rapport Quarto. Le code Python y
+produit directement les tableaux et les graphiques a partir des donnees. Les
+resultats peuvent etre regeneres, mais ils peuvent varier selon le modele
+d'embedding. Il faut donc les lire comme des pistes a examiner avec les
+personnes qui connaissent le referentiel.
+
+
+Diapositive 10 - Bilan et apports
+Temps vise : 12 min 00 a 13 min 20
+
+Pour l'OPT-NC, le projet fournit maintenant deux bases relationnelles et
+plusieurs supports generes : les schemas, les documents PDF et EPUB ainsi que le
+site Hugo et rapport Quarto pour l'analyse des competences.
+
+L'apport principal est d'avoir une meme source de donnees pour tous ces usages.
+Le referentiel devient plus facile a controler, a consulter et a faire evoluer.
+La chaine automatisee facilite aussi sa reprise par une autre personne.
+
+De mon cote, ce stage m'a permis de renforcer mes competences en modelisation
+SQL, en automatisation et en generation documentaire. J'ai egalement découvert
+grace a ce stage a mettre en place une chaine CI/CD et a realiser des visualisations de donnees.
+
+Cette experience confirme aussi mon souhait de poursuivre le master SDL et
+d'approfondir mes competences en CI/CD.
+
+Diapositive 11 - Remerciements
+Temps vise : 13 min 20 a 13 min 40
+
+Avant de terminer, je souhaite remercier Adrien Sales et la section GLIA pour
+leur accueil et leur encadrement. Je remercie egalement Vinh Faucher, Loic
+Salmon et Jean-Baptiste Raclet pour leur aide pendant le stage.
+
+
+Diapositive 12 - Questions et echanges
+Temps vise : 13 min 40 a 13 min 50
+
+Merci pour votre attention. Je suis maintenant disponible pour vos questions.

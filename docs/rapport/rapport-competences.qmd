@@ -53,7 +53,7 @@ os.environ.setdefault("TQDM_DISABLE", "1")
 
 EMBEDDING_MODEL_NAME = os.environ.get("EMBEDDING_MODEL_NAME", "BAAI/bge-m3")
 DB_PATH_FROM_REPORT = "../../dist/ref-metiers-opt-nc.duckdb"
-OUTPUT_DIR_FROM_REPORT = "img/generated"
+OUTPUT_DIR_FROM_REPORT = "img/generated/competences"
 RANDOM_STATE = 42
 MIN_CLUSTERS = 5
 MAX_CLUSTERS = 20
@@ -706,7 +706,8 @@ print(
 )
 ```
 
-![Comparaison des scores par valeur de K](img/generated/skills_scores_by_k.png)
+![Comparaison des scores par valeur de
+K](img/generated/competences/skills_scores_by_k.png)
 
 # Nommage des clusters
 
@@ -730,7 +731,8 @@ for cid in cluster_ids:
     print(f"| {cid + 1} | {cluster_names[cid]} | {len(clusters[cid])} | {round(cluster_density_scores[cid], 4)} |")
 ```
 
-![Comparaison des indices de densité par cluster](img/generated/skills_cluster_density.png)
+![Comparaison des indices de densité par
+cluster](img/generated/competences/skills_cluster_density.png)
 
 L'indice de densité par cluster correspond à la distance moyenne des compétences au
 centre de leur cluster dans l'espace utilisé pour le clustering. Plus l'indice est
@@ -750,7 +752,8 @@ print(
 print(":::")
 ```
 
-![Carte de chaleur des compétences dans l'espace UMAP](img/generated/skills_cluster_heatmap.png)
+![Carte de chaleur des compétences dans l'espace
+UMAP](img/generated/competences/skills_cluster_heatmap.png)
 
 # Résultats détaillés
 
@@ -799,7 +802,7 @@ Un groupe très resserré indique des compétences proches les unes des autres, 
 groupe plus large indique un cluster plus dispersé. Les axes UMAP 1 et UMAP 2
 servent uniquement à positionner les compétences pour visualiser les proximités.
 
-![](img/generated/skills_umap_visualization.png)
+![](img/generated/competences/skills_umap_visualization.png)
 
 Le choix d'UMAP pour ce schéma s'explique par la nature des données utilisées.
 Les compétences sont représentées par des embeddings, c'est-à-dire des vecteurs

@@ -25,11 +25,11 @@ header-includes:
 ## \ 
 
 \centering
-\includegraphics[height=1.1cm]{img/logo_universite.png}
+\includegraphics[height=1.1cm]{img/logo/logo_universite.png}
 \hspace{0.8cm}
-\includegraphics[height=0.9cm]{img/SDL.png}
+\includegraphics[height=0.9cm]{img/logo/SDL.png}
 \hspace{0.8cm}
-\includegraphics[height=1.1cm]{img/logo_opt.png}
+\includegraphics[height=1.1cm]{img/logo/logo_opt.png}
 
 \vfill
 
@@ -44,99 +44,82 @@ header-includes:
 \begin{tabular}{rl}
 \textbf{Stagiaire :} & Olivier Dinan \\
 \textbf{Structure d'accueil :} & OPT-NC \\
-\textbf{Tuteur entreprise :} & Adrien Sales \\
+\textbf{Maître de stage :} & Adrien Sales \\
 \textbf{Référent universitaire :} & Philippe Truillet \\
 \end{tabular}
 
 \vfill
 
-7 juillet 2026
+26 août 2026
 
-## Remerciements
-
-\vfill
-
-\begin{itemize}
-\item \textbf{Adrien Sales \& section GLIA} : Accueil, confiance et encadrement
-\item \textbf{Vinh Faucher} : Mise en relation et facilitation du stage
-\item \textbf{Loïc Salmon} : Matériel de test (Jetson Orin Nano)
-\item \textbf{Jean-Baptiste Raclet} : Support administratif réactif
-\end{itemize}
+## Du référentiel aux supports de consultation
 
 \vfill
-
-## Contexte, sujet et objectifs
-
-\vfill
-
-\begin{center}
-\begin{minipage}{0.96\textwidth}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.49\textwidth}
-\textbf{Contexte}
-
-\begin{itemize}
-\item OPT-NC, section GLIA
-\item Référentiel métiers de l'entreprise
-\item Trois CSV bruts fournis
-\item Données difficiles à exploiter
-\end{itemize}
-
-\end{column}
-\begin{column}{0.45\textwidth}
-\textbf{Sujet et objectifs}
-
-\begin{itemize}
-\item Structurer le référentiel métiers
-\item Données structurées
-\item Référentiel interopérable
-\item Supports cohérents et alignés
-\end{itemize}
-\end{column}
-\end{columns}
-\end{minipage}
-\end{center}
-
-\vfill
-
-## Vue d'ensemble du flux de travail
 
 \centering
 
 \begin{tikzpicture}[
   arrow/.style={->, thick, draw=gray!75},
-  redarrow/.style={->, ultra thick, draw=red!80}
+  source/.style={
+    draw=blue!35,
+    fill=blue!6,
+    rounded corners=2pt,
+    minimum width=2.0cm,
+    minimum height=1.0cm,
+    align=center,
+    font=\small\bfseries
+  },
+  output/.style={
+    rounded corners=2pt,
+    minimum width=4.1cm,
+    minimum height=0.68cm,
+    align=center,
+    font=\scriptsize\bfseries
+  }
 ]
-\path[use as bounding box] (-5.8,-2.2) rectangle (5.8,2.2);
 
-\node[draw=blue!35, fill=blue!6, rounded corners=2pt, minimum width=1.5cm, minimum height=1.0cm, align=center, font=\small\bfseries] (csv) at (-3.6, 0) {3 CSV\\bruts};
-
-
+\node[source] (csv) at (-4.8, 0) {3 CSV\\bruts};
 \draw[arrow] (csv.east) -- (-1.9, -0.4);
 
-\draw[thick, draw=blue!45, fill=blue!7] (-1.8, -1.2) rectangle (-0.2, 0.4);
-\draw[thick, draw=blue!45, fill=blue!15] (-1.0, 0.4) ellipse (0.8cm and 0.28cm);
-\draw[thick, draw=blue!45] (-1.8, -0.4) arc (180:360:0.8cm and 0.28cm);
-\draw[thick, draw=blue!45] (-1.8, -0.8) arc (180:360:0.8cm and 0.28cm);
+\draw[thick, draw=blue!45, fill=blue!7]
+  (-1.8, -1.2) rectangle (-0.2, 0.4);
+\draw[thick, draw=blue!45, fill=blue!15]
+  (-1.0, 0.4) ellipse (0.8cm and 0.28cm);
+\draw[thick, draw=blue!45]
+  (-1.8, -0.4) arc (180:360:0.8cm and 0.28cm);
+\draw[thick, draw=blue!45]
+  (-1.8, -0.8) arc (180:360:0.8cm and 0.28cm);
 
-\node[font=\scriptsize\color{blue!80!black}] at (-1.0, -0.1) {\faDatabase\ DuckDB};
-\node[font=\scriptsize\color{blue!80!black}] at (-1.0, -0.5) {\faDatabase\ SQLite};
+\node[font=\scriptsize\color{blue!80!black}]
+  at (-1.0, -0.1) {\faDatabase\ DuckDB};
+\node[font=\scriptsize\color{blue!80!black}]
+  at (-1.0, -0.5) {\faDatabase\ SQLite};
 \node[font=\scriptsize\color{blue!80!black}] at (-1.0, -0.9) {\dots};
 
-\node[draw=green!50, fill=green!8, rounded corners=2pt, minimum width=2.4cm, minimum height=0.5cm, align=center, font=\scriptsize\bfseries] (qualite) at (-1.0, -1.8) {Qualité des données};
+\node[
+  draw=green!50,
+  fill=green!8,
+  rounded corners=2pt,
+  minimum width=3.0cm,
+  minimum height=0.5cm,
+  align=center,
+  font=\scriptsize\bfseries
+] (qualite) at (-1.0, -1.8) {Qualité des données};
 \draw[<->, thick, draw=gray!75] (-1.0, -1.2) -- (qualite.north);
 
-\node[draw=orange!50, fill=orange!8, rounded corners=2pt, minimum width=2.4cm, minimum height=0.55cm, align=center, font=\scriptsize\bfseries] (schema) at (1.8, 1.55) {Schéma};
-\node[draw=red!50, fill=red!8, rounded corners=2pt, minimum width=2.4cm, minimum height=0.55cm, align=center, font=\scriptsize\bfseries] (pdf) at (1.8, 0.75) {PDF};
-\node[draw=purple!50, fill=purple!8, rounded corners=2pt, minimum width=2.4cm, minimum height=0.55cm, align=center, font=\scriptsize\bfseries] (epub) at (1.8, -0.05) {ePub};
-\node[draw=cyan!50, fill=cyan!8, rounded corners=2pt, minimum width=2.4cm, minimum height=0.55cm, align=center, font=\scriptsize\bfseries] (site) at (1.8, -0.85) {Site Hugo};
-\node[draw=green!50, fill=green!8, rounded corners=2pt, minimum width=2.4cm, minimum height=0.55cm, align=center, font=\scriptsize\bfseries] (analyse) at (1.8, -1.65) {Analyse\\sémantique};
+\node[output, draw=orange!50, fill=orange!8]
+  (schema) at (3.6, 1.35) {Schémas (SchemaCrawler)};
+\node[output, draw=red!50, fill=red!8]
+  (documents) at (3.6, 0.45) {Référentiel (PDF / EPUB)};
+\node[output, draw=cyan!50, fill=cyan!8]
+  (site) at (3.6, -0.45) {Référentiel web};
+\node[output, draw=green!50, fill=green!8]
+  (analyse) at (3.6, -1.35) {Analyse sémantique};
 
-\draw[arrow] (-0.2, -0.4) to[out=45, in=180] (schema.west);
-\draw[arrow] (-0.2, -0.4) to[out=25, in=180] (pdf.west);
-\draw[arrow] (-0.2, -0.4) to[out=0, in=180] (epub.west);
-\draw[arrow] (-0.2, -0.4) to[out=-25, in=180] (site.west);
-\draw[arrow] (-0.2, -0.4) to[out=-45, in=180] (analyse.west);
+\draw[arrow] (-0.2, -0.4) to[out=40, in=180] (schema.west);
+\draw[arrow] (-0.2, -0.4) to[out=15, in=180] (documents.west);
+\draw[arrow] (-0.2, -0.4) to[out=-15, in=180] (site.west);
+\draw[arrow] (-0.2, -0.4) to[out=-40, in=180] (analyse.west);
 
 \end{tikzpicture}
 
@@ -168,16 +151,21 @@ header-includes:
 \draw[arrow] (understand) -- (structure);
 \draw[arrow] (structure) -- (generate);
 \draw[arrow] (generate) -- (verify);
-\draw[feedback] (verify.west) .. controls (-2.0,-1.8) and (-2.0,0.6) ..
-  node[left, font=\scriptsize, text=orange!80, align=center] {si erreur,\\corriger}
-  (structure.west);
+\draw[feedback] (verify.west) .. controls (-2.0,-1.8) and (-2.0,1.8) ..
+  node[left, font=\scriptsize, text=orange!80, align=center]
+  {si incohérent,\\reprendre}
+  (understand.west);
 \end{tikzpicture}
 
 ## Structuration des données
 
 \centering
 
-\includegraphics[width=0.96\textwidth,trim=0 28 0 0,clip]{img/gem-metiers-extrait.png}
+\includegraphics[
+  width=0.96\textwidth,
+  trim=0 28 0 0,
+  clip
+]{img/captures/gem-metiers-extrait.png}
 
 \vspace{-0.05cm}
 
@@ -215,98 +203,51 @@ header-includes:
 \draw[miniarrow] (db) -- node[above, font=\scriptsize, midway] {réutiliser} (use);
 \end{tikzpicture}
 
-## Qualité des données
+## Deux situations à examiner
 
 \centering
 
-\includegraphics[width=0.90\textwidth,height=0.35\textheight,keepaspectratio,trim=0 8 0 4,clip]{img/annexes/qualite-donnees-niveau-requis-zero.png}
+\includegraphics[
+  width=0.90\textwidth,
+  height=0.35\textheight,
+  keepaspectratio,
+  trim=0 8 0 4,
+  clip
+]{img/annexes/qualite-donnees-niveau-requis-zero.png}
 
 \vspace{-0.03cm}
 
-\textbf{Niveaux requis = 0}
+\textbf{Niveau requis à 0 (minimum attendu 1)}
 
 \vspace{0.08cm}
 
-\includegraphics[width=0.72\textwidth,height=0.24\textheight,keepaspectratio,trim=0 4 0 2,clip]{img/annexes/qualite-donnees-doublon-techniques-management.png}
+\includegraphics[
+  width=0.72\textwidth,
+  height=0.24\textheight,
+  keepaspectratio,
+  trim=0 4 0 2,
+  clip
+]{img/annexes/qualite-donnees-doublon-techniques-management.png}
 
 \vspace{-0.03cm}
 
-\textbf{Doublon de libellé}
+\textbf{Ambiguïté métier}
 
-## Pipeline de génération
+## Automatisation avec le Taskfile
+
+\vfill
 
 \centering
 
-\vfill
-
-\begin{tikzpicture}[
-  stagebase/.style={
-    rectangle,
-    rounded corners=3pt,
-    minimum width=2.0cm,
-    minimum height=0.82cm,
-    align=center,
-    font=\footnotesize
-  },
-  stagecyan/.style={stagebase, draw=cyan!45, fill=cyan!7},
-  stageblue/.style={stagebase, draw=blue!45, fill=blue!7},
-  output/.style={
-    rectangle,
-    rounded corners=2pt,
-    minimum width=2.4cm,
-    minimum height=0.55cm,
-    align=center,
-    font=\scriptsize,
-    inner ysep=2pt
-  },
-  outputgreen/.style={output, draw=green!50, fill=green!8},
-  outputorange/.style={output, draw=orange!50, fill=orange!8},
-  outputred/.style={output, draw=red!50, fill=red!8},
-  outputpurple/.style={output, draw=purple!50, fill=purple!8},
-  task/.style={
-    rectangle,
-    rounded corners=2pt,
-    draw=gray!30,
-    fill=white,
-    font=\scriptsize\ttfamily,
-    inner xsep=3pt,
-    inner ysep=1pt
-  },
-  arrow/.style={->, thick, draw=gray!75}
-]
-
-\node[stagecyan] (csv) at (-5.4,0.25) {\textbf{\faFileCsv\ CSV}\\métiers\\compétences};
-\node[stageblue] (duck) at (-1.4,0.25) {\textbf{\faDatabase\ DuckDB}\\relationnelle};
-
-\node[outputgreen] (sqlite) at (4.6,1.5) {\textbf{\faDatabase\ SQLite}\\base réutilisable};
-\node[outputorange] (schema) at (4.6,0.5) {\textbf{\faSitemap\ Schéma}\\SchemaCrawler};
-\node[outputred] (docs) at (4.6,-0.5) {\textbf{\faFilePdf\ Documents}\\PDF / EPUB};
-\node[outputpurple] (hugo) at (4.6,-1.5) {\textbf{\faGlobe\ Site Hugo}\\HTML statique};
-
-\draw[arrow] (csv.east) -- node[task, midway, above=1pt] {task duckdb} (duck.west);
-
-\draw[thick, draw=gray!65] (duck.east) -- (1.0, 0.25);
-\draw[thick, draw=gray!65] (1.0, 1.5) -- (1.0, -1.5);
-
-\draw[arrow] (1.0, 1.5) -- node[task, midway, above=1pt] {task sqlite} (sqlite.west);
-\draw[arrow] (1.0, 0.5) -- node[task, midway, above=1pt] {task schema} (schema.west);
-\draw[arrow] (1.0, -0.5) -- node[task, midway, above=1pt] {task docs} (docs.west);
-\draw[arrow] (1.0, -1.5) -- node[task, midway, above=1pt] {task site} (hugo.west);
-
-\end{tikzpicture}
+\includegraphics[
+  width=0.98\textwidth
+]{img/captures/task-list.png}
 
 \vfill
 
-\begin{tabular}{lll}
-\textbf{Goal} & \textbf{Configuration} & \textbf{Sortie} \\
-\texttt{task duckdb} & \texttt{duck.sql} & DuckDB \\
-\texttt{task docs} & \texttt{generate-adoc.py}, \texttt{pdf-theme.yml} & PDF / EPUB \\
-\dots & \dots & \dots
-\end{tabular}
+## Vérification et déploiement automatisés
 
 \vfill
-
-## Pipeline CI/CD
 
 \centering
 
@@ -338,72 +279,66 @@ header-includes:
   resultbase/.style={
     rectangle,
     rounded corners=2pt,
-    minimum width=2.3cm,
+    minimum width=3.2cm,
     minimum height=0.58cm,
     align=center,
     font=\scriptsize
   },
+  resultblue/.style={resultbase, draw=blue!60, fill=blue!8},
   resultorange/.style={resultbase, draw=orange!60, fill=orange!8},
   resultred/.style={resultbase, draw=red!60, fill=red!8},
+  resultgreen/.style={resultbase, draw=green!60, fill=green!8},
   arrow/.style={->, thick, draw=gray!70}
 ]
-\node[triggergreen] (prtitle) at (-5.4,1.45) {Pull Request};
-\node[stepcyan] (pr) at (-2.5,1.45) {\faCodeBranch};
+\node[triggerblue] (pushtitle) at (-4.8,1.20) {Push main / develop};
+\node[stepcyan] (push) at (-2.5,1.20) {\faUpload};
+\node[label, below=0.08cm of push] {Push\\main/develop};
+\node[steppurple] (release) at (0,1.20) {\faTag};
+\node[label, below=0.08cm of release] {
+  Semantic Release\\outil de versionnement
+};
+
+\node[triggergreen] (prtitle) at (-4.8,-1.25) {Pull Request};
+\node[stepcyan] (pr) at (-2.5,-1.25) {\faCodeBranch};
 \node[label, below=0.08cm of pr] {PR ouverte\\main/develop};
-\node[stepgreen] (check) at (2.5,1.45) {\faCheckDouble};
-\node[label, below=0.08cm of check] {Vérification\\duckdb, sqlite, docs};
+\node[stepgreen] (check) at (0,-1.25) {\faCheckDouble};
+\node[label, below=0.08cm of check] {Vérification\\de la génération};
 \draw[arrow] (pr) -- (check);
 
-\node[triggerblue] (pushtitle) at (-5.4,-0.55) {Push main / develop};
-\node[stepcyan] (push) at (-2.5,-0.55) {\faUpload};
-\node[label, below=0.08cm of push] {Push\\main/develop};
-\node[steppurple] (release) at (-0.2,-0.55) {\faTag};
-\node[label, below=0.08cm of release] {Release\\version};
-\node[stepblue] (db) at (2.1,-0.55) {\faDatabase};
-\node[label, below=0.08cm of db] {Bases\\DuckDB / SQLite};
-\node[resultorange] (schemas) at (5.4,0.02) {\textbf{Schémas}\\SchemaCrawler};
-\node[resultred] (docs) at (5.4,-1.12) {\textbf{Documents}\\PDF / EPUB};
+\node[resultblue] (db) at (4.0,1.50) {\textbf{DuckDB / SQLite}};
+\node[resultorange] (schemas) at (4.0,0.50) {
+  \textbf{Schémas}\\SchemaCrawler
+};
+\node[resultred] (docs) at (4.0,-0.50) {
+  \textbf{Documents}\\PDF / EPUB
+};
+\node[resultgreen] (site) at (4.0,-1.50) {
+  \textbf{Publication du site}\\GitHub Pages
+};
 
 \draw[arrow] (push) -- (release);
-\draw[arrow] (release) -- (db);
-\draw[arrow] (db) -- (schemas);
-\draw[arrow] (db) -- (docs);
+\draw[thick, draw=gray!70] (release.east) -- (1.9,1.20);
+\draw[thick, draw=gray!70] (1.9,1.50) -- (1.9,-1.50);
+\draw[arrow] (1.9,1.50) -- (db.west);
+\draw[arrow] (1.9,0.50) -- (schemas.west);
+\draw[arrow] (1.9,-0.50) -- (docs.west);
+\draw[arrow] (1.9,-1.50) -- (site.west);
 \end{tikzpicture}
 
-\vspace{0.15cm}
+\vfill
 
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.32\textwidth}
-\begin{tcolorbox}[colback=blue!5!white, colframe=black, colbacktitle=blue!85!black, coltitle=white, title={\faCheckDouble\ \bfseries CI / Validation}, halign=center, halign title=center, fonttitle=\bfseries\scriptsize, fontupper=\scriptsize, arc=3pt, boxrule=0.8pt, height=1.75cm, valign=center, left=2pt, right=2pt, top=2pt, bottom=2pt]
-Vérification automatisée de la base et de la doc à chaque PR.
-\end{tcolorbox}
-\end{column}
-\begin{column}{0.32\textwidth}
-\begin{tcolorbox}[colback=blue!5!white, colframe=black, colbacktitle=blue!85!black, coltitle=white, title={\faTag\ \bfseries Git Release}, halign=center, halign title=center, fonttitle=\bfseries\scriptsize, fontupper=\scriptsize, arc=3pt, boxrule=0.8pt, height=1.75cm, valign=center, left=2pt, right=2pt, top=2pt, bottom=2pt]
-Génération automatique de version et publication de tags.
-\end{tcolorbox}
-\end{column}
-\begin{column}{0.32\textwidth}
-\begin{tcolorbox}[colback=blue!5!white, colframe=black, colbacktitle=blue!85!black, coltitle=white, title={\faUpload\ \bfseries CD / Déploiement}, halign=center, halign title=center, fonttitle=\bfseries\scriptsize, fontupper=\scriptsize, arc=3pt, boxrule=0.8pt, height=1.75cm, valign=center, left=2pt, right=2pt, top=2pt, bottom=2pt]
-Publication automatique du site statique sur GitHub Pages.
-\end{tcolorbox}
-\end{column}
-\end{columns}
-
-## Site de consultation
+## Référentiel web
 
 \vfill
 
 \begin{center}
 \begin{minipage}[c]{0.55\textwidth}
 
-\textbf{Objectif}
-
 \begin{itemize}
-\item Consultation directe du référentiel
-\item Navigation par familles et métiers
-\item Recherche sur les intitulés et les codes
-\item Déploiement sur GitHub Pages
+\item Hugo (générateur de sites statiques)
+\item Pages Markdown créées depuis DuckDB
+\item Thème Relearn (navigation et recherche)
+\item Publication sur GitHub Pages
 \end{itemize}
 
 \end{minipage}
@@ -413,7 +348,7 @@ Publication automatique du site statique sur GitHub Pages.
 \begin{tikzpicture}
 \node (qr) {\qrcode[height=3.25cm,level=H]{https://opt-nc.github.io/odata-referentiel-metiers/}};
 \node[fill=white, inner sep=2pt] at (qr.center)
-  {\includegraphics[width=1.05cm]{img/OPT_NC_2.png}};
+  {\includegraphics[width=1.05cm]{img/logo/OPT_NC_2.png}};
 \end{tikzpicture}
 \end{minipage}
 \end{center}
@@ -422,105 +357,85 @@ Publication automatique du site statique sur GitHub Pages.
 
 ## Analyse exploratoire des compétences
 
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.46\textwidth}
+\vfill
 
-\textbf{Question}
-
-\begin{itemize}
-\item Quels libellés de compétences sont proches ?
-\end{itemize}
-
-\vspace{0.18cm}
-
-\textbf{Méthode}
-
-\begin{enumerate}
-\item Embeddings texte
-\item K-Means
-\item Score de Silhouette
-\item Projection UMAP
-\end{enumerate}
-
-\vspace{0.18cm}
-
-\textbf{Lecture}
-
-\begin{itemize}
-\item Point = compétence
-\item Couleur = groupe
-\end{itemize}
-
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.22\textwidth}
+\mbox{}
 \end{column}
-\begin{column}{0.50\textwidth}
+\begin{column}{0.56\textwidth}
 \centering
-\includegraphics[width=0.98\textwidth]{img/generated/skills_umap_visualization.png}
+\includegraphics[
+  width=\textwidth,
+  height=0.73\textheight,
+  keepaspectratio,
+  trim=38 0 285 0,
+  clip
+]{img/generated/competences/skills_umap_visualization.png}
 
+\vspace{0.1cm}
+
+{\tiny Un point = une compétence\hspace{0.4cm}
+Une couleur = un groupe}
+\end{column}
+\begin{column}{0.22\textwidth}
+\centering
+\makebox[\textwidth][r]{%
+\includegraphics[
+  width=1.35\textwidth,
+  keepaspectratio,
+  trim=727 528 5 41,
+  clip
+]{img/generated/competences/skills_umap_visualization.png}%
+}
 \end{column}
 \end{columns}
 
-## Scores de clustering
-
-**Lecture**
-
-- Silhouette : plus haut = meilleur
-- Davies-Bouldin : plus bas = meilleur
-- K retenu : meilleur score de Silhouette
-
-\vspace{0.2cm}
-
-\centering
-\includegraphics[width=0.55\textwidth]{img/generated/skills_scores_by_k.png}
+\vfill
 
 ## Bilan et apports
 
 \vfill
 
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.48\textwidth}
+\begin{flushleft}
+\begin{minipage}{0.72\textwidth}
 \textbf{Pour l'OPT-NC}
 \begin{itemize}
 \item Bases relationnelles (DuckDB, SQLite)
-\item Livrables générés (PDF, EPUB, site Hugo)
+\item Supports générés (PDF, EPUB, site Hugo)
+\item Rapport d'analyse des compétences (Quarto)
 \item Processus reproductible et interopérable
 \end{itemize}
-\end{column}
-\hfill
-\begin{column}{0.48\textwidth}
+\end{minipage}
+\end{flushleft}
+
+\vspace{0.45cm}
+
+\begin{flushright}
+\begin{minipage}{0.58\textwidth}
 \textbf{Pour l'étudiant}
 \begin{itemize}
 \item Modélisation SQL et génération documentaire
 \item Automatisation, Git et CI/CD
-\item Vérification des livrables générés
-\item Diagnostic, priorisation et autonomie
+\item Analyse et visualisation des données
 \end{itemize}
-\end{column}
-\end{columns}
+\end{minipage}
+\end{flushright}
 
 \vfill
 
-## Perspectives et conclusion
+## Remerciements
 
 \vfill
 
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.48\textwidth}
-\textbf{Perspectives M2}
 \begin{itemize}
-\item Poursuite en développement logiciel
-\item Approfondissement des tests et de la CI/CD
-\item Conception et maintenance d'outils métiers
+\item \textbf{Adrien Sales \& section GLIA} : Accueil, confiance et encadrement
+\item \textbf{Vinh Faucher} : Mise en relation et facilitation du stage
+\item \textbf{Loïc Salmon} : Matériel de test (Jetson Orin Nano)
+\item \textbf{Jean-Baptiste Raclet} : Support administratif réactif
 \end{itemize}
-\end{column}
-\hfill
-\begin{column}{0.48\textwidth}
-\textbf{Conclusion}
-\begin{itemize}
-\item Référentiel structuré et réutilisable
-\item Données et livrables synchronisés
-\end{itemize}
-\end{column}
-\end{columns}
+
+\vfill
 
 ## Questions \& Échanges
 

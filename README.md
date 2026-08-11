@@ -93,7 +93,7 @@ The report does the following:
 - computes text embeddings with the configured Sentence Transformers model
 - tests several values of K for K-Means clustering
 - evaluates the clusters with metrics such as the Silhouette score
-- generates visualizations in `docs/rapport/img/generated/`
+- generates visualizations in `docs/rapport/img/generated/competences/`
 - builds a PDF report in `docs/rapport/dist/`
 
 To generate only the competency analysis report:
@@ -123,7 +123,8 @@ The active embedding model is configured in `docs/rapport/Taskfile.yml` with
 - `data/output/docs/referentiel_metiers.pdf` : Final PDF document (via Asciidoctor)
 - `site/public/` : Generated Hugo website
 - `docs/rapport/dist/rapport-competences-model-*.pdf` : Competency clustering report
-- `docs/rapport/img/generated/` : Generated competency analysis charts
+- `docs/rapport/img/generated/competences/` : Generated competency analysis
+  charts
 - And the exported CSVs from DuckDB located in `data/output/csv/`
 
 ## 🛠️ And you can also modify the Reference Framework !
